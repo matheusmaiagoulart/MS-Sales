@@ -6,7 +6,7 @@ namespace Sales.Domain.Models
     {
 
         [Key]
-        public int IdSale { get; private set; }
+        public Guid IdSale { get; private set; }
         public List<OrdemItem> OrdemItens { get; private set; } = new List<OrdemItem>();
         public decimal TotalAmount { get; private set; }
         public StatusSale Status { get; private set; }
@@ -19,13 +19,14 @@ namespace Sales.Domain.Models
 
         public Order(List<OrdemItem> ordemItems, decimal totalAmount)
         {
+            IdSale = Guid.NewGuid();
             OrdemItens = ordemItems;
             TotalAmount = totalAmount;
             Status = StatusSale.PENDING;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = null;
         }
-        public Order(int idSale, List<OrdemItem> ordemItems, decimal totalAmount, StatusSale status, DateTime createdAt, DateTime? updatedAt)
+        public Order(Guid idSale, List<OrdemItem> ordemItems, decimal totalAmount, StatusSale status, DateTime createdAt, DateTime? updatedAt)
         {
             IdSale = idSale;
             OrdemItens = ordemItems;

@@ -29,7 +29,7 @@ public class ProductRepository : IProductRepository
         return await _context.Stock
             .FirstOrDefaultAsync(p => p.IdProduct == productId);
     }
-    
+
     public async Task<Product?> GetProductByIdAsNoTracking(Guid productId)
     {
         return await _context.Stock
@@ -44,8 +44,20 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
-    public async Task SaveChangesAsync()
+    public async Task<decimal?> GetProductPriceIfStockAvailable(Guid productId, int quantity)
+    {
+        var product =  await _context.Stock
+            .FirstOrDefaultAsync(p => p.IdProduct == productId && p.StockQuantity >= quantity);
+        if (product != null)
+            return product.Price;
+        
+        return null;
+    }
+
+public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
     }
+    
+    
 }

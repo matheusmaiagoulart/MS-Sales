@@ -11,8 +11,11 @@ namespace Sales.Infrastructure.Data.MappingTables
             e.HasKey(o => o.IdSale);
             e.OwnsMany(o => o.OrdemItens, p =>
             {
+                p.WithOwner().HasForeignKey("OrderIdSale");
+                p.Property<Guid>("OrderIdSale");
                 p.Property(pi => pi.IdProduct).IsRequired();
                 p.Property(pi => pi.Quantity).IsRequired();
+                p.ToTable("OrdemItem");
             });
             e.Property(o => o.TotalAmount).IsRequired().HasColumnType("decimal(18,2)");
             e.Property(o => o.Status).IsRequired();
