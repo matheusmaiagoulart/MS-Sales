@@ -19,10 +19,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //Conexao com o banco de dados
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseMySql(
+//         builder.Configuration.GetConnectionString("MS-Stock-Connection"),
+//         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MS-Stock-Connection"))
+//     )
+// );
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("MS-Stock-Connection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MS-Stock-Connection"))
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("MS-Stock-Connection")
     )
 );
 

@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sales.Application.Orders.Commands.CreateOrder;
 using Sales.Domain.Interfaces;
 using Sales.Infrastructure.Data.Context;
 using Sales.Infrastructure.RabbitMQConfig;
+using Sales.Infrastructure.RabbitMQConfig.Consumer;
+using Sales.Infrastructure.RabbitMQConfig.Publisher;
 using Sales.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,16 +18,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Conexao com o banco de dados
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("MS-Sales-Connection"),
-        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("MS-Sales-Connection"))
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("MS-Sales-Connection")
     )
 );
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommandHandler).Assembly));
 builder.Services.AddScoped<RabbitMQPublisher>();
+builder.Services.AddScoped<ConfigRabbitMQConsumer>();
 builder.Services.AddScoped<ConfigRabbitMQ>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();

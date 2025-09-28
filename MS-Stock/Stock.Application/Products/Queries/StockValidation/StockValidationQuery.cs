@@ -3,5 +3,5 @@ using MediatR;
 
 namespace Stock.Application.Products.Queries.StockValidation;
 
-public record StockValidationQuery(List<OrdemItemDTO> Items)
+public record StockValidationQuery(Guid IdOrder, List<OrdemItemDTO> Items)
     : IRequest<Result<StockValidationResponse>>;

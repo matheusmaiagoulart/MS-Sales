@@ -1,7 +1,7 @@
 using System.Text.Json;
 using RabbitMQ.Client;
 
-namespace Sales.Infrastructure.RabbitMQConfig;
+namespace Sales.Infrastructure.RabbitMQConfig.Publisher;
 
 public class RabbitMQPublisher
 {
@@ -13,7 +13,7 @@ public class RabbitMQPublisher
         _configRabbitMq = configRabbitMq;
     }
 
-    public async Task Publish<T>(T order, string queue)
+    public async Task Publish<T>(T order, string queue, Guid idOrder)
     {
         var factory = new ConnectionFactory()
             {
@@ -25,6 +25,12 @@ public class RabbitMQPublisher
         
          var connection = await factory.CreateConnectionAsync();
          var channel = await connection.CreateChannelAsync();
+         
+         var props = new BasicProperties()
+         {
+             CorrelationId = idOrder.ToString(),
+             ReplyTo = "orderResponseValidationStockQueue"
+         };
         
         await channel.QueueDeclareAsync(queue: queue,
             durable: false,
@@ -38,6 +44,7 @@ public class RabbitMQPublisher
         await channel.BasicPublishAsync(
             exchange: "",
             routingKey: queue,
+            basicProperties: props,
             mandatory: false,
             body: body,
             cancellationToken: CancellationToken.None);
@@ -49,7 +56,7 @@ public class RabbitMQPublisher
 
     public void EventoConfirmacao<T>(T order)
     {
-        Console.WriteLine("Mensagem enviada para a fila RabbitMQ." + JsonSerializer.Serialize<T>(orderR));
+        Console.WriteLine("Mensagem enviada para a fila RabbitMQ." + JsonSerializer.Serialize<T>(order));
     }
     
 

@@ -26,14 +26,14 @@ namespace Sales.Domain.Models
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = null;
         }
-        public Order(Guid idSale, List<OrdemItem> ordemItems, decimal totalAmount, StatusSale status, DateTime createdAt, DateTime? updatedAt)
+        public Order(Guid idSale, List<OrdemItem> ordemItems, decimal totalAmount)
         {
             IdSale = idSale;
             OrdemItens = ordemItems;
             TotalAmount = totalAmount;
-            Status = status;
-            CreatedAt = createdAt;
-            UpdatedAt = updatedAt;
+            Status = StatusSale.PENDING;
+            CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
+            UpdatedAt = null;
         }
         
         public void UpdateStatusOrder(StatusSale newStatus)

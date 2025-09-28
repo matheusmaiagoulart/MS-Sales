@@ -5,7 +5,7 @@ namespace Stock.Infrastructure.RabbitMQ.Producers;
 
 public class ValidationStockAvailablePublisher
 {
-    public async Task Publisher<T>(T messageReturnValidationStock, string queue)
+    public async Task Publisher<T>(T messageReturnValidationStock, BasicProperties basicProperties)
     {
         var factory = new ConnectionFactory()
         {
@@ -21,7 +21,7 @@ public class ValidationStockAvailablePublisher
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
             
-            await channel.QueueDeclareAsync(queue: queue,
+            await channel.QueueDeclareAsync(queue: basicProperties.ReplyTo,
                 durable: false,
                 exclusive: false,
                 autoDelete: false,
@@ -30,10 +30,12 @@ public class ValidationStockAvailablePublisher
             var message = JsonSerializer.Serialize(messageReturnValidationStock);
             var body = System.Text.Encoding.UTF8.GetBytes(message);
             
+            
             await channel.BasicPublishAsync(
                 exchange: "",
-                routingKey: queue,
+                routingKey: basicProperties.ReplyTo,
                 mandatory: false,
+                basicProperties: basicProperties, 
                 body: body,
                 cancellationToken: CancellationToken.None);
                 

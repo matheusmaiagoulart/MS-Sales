@@ -13,10 +13,12 @@ public class StockValidationHandler : IRequestHandler<StockValidationQuery, Resu
     }
     public async Task<Result<StockValidationResponse>> Handle(StockValidationQuery request, CancellationToken cancellationToken)
     {
-        Console.WriteLine("Iniciando validação de estoque...");
-        var listItemsValidation = request.Items.ToList().Distinct();
+        
+        var listItemsValidation = request.Items.DistinctBy(x => x.IdProduct).ToList();
         decimal totalAmout = 0;
-        var response = new StockValidationResponse {Available = false, TotalAmount = 0};
+        
+        var response = new StockValidationResponse (request.IdOrder, false, 0);
+        
         for (int i = 0; i < listItemsValidation.Count(); i++)
         {
             var result = await _productRepository
@@ -27,9 +29,8 @@ public class StockValidationHandler : IRequestHandler<StockValidationQuery, Resu
                 return Result.Fail(response + "");
             
             totalAmout += result.Value * listItemsValidation.ElementAt(i).Quantity;
-            
         }
-        Console.WriteLine("Estoque disponível para todos os itens." + totalAmout);
+        
         response.Available = true;
         response.TotalAmount = totalAmout;
         return Result.Ok(response);
