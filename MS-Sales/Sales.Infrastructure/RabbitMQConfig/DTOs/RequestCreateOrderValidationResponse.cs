@@ -9,6 +9,9 @@ public class RequestCreateOrderValidationResponse
         public bool IsStockAvailable { get; init; }
         [JsonPropertyName("TotalAmount")]
         public decimal ValueAmount { get; init; }
+
+        public DateTime CreatedAt { get; init; } = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
+            TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
         public RequestCreateOrderValidationResponse()
         {
             IdOrder = Guid.Empty;

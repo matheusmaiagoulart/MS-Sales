@@ -24,12 +24,16 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         _logger = logger;
     }
 
-    public async Task<Result<CreateOrderResponse>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
+    public async Task<Result<CreateOrderResponse>> Handle(CreateOrderCommand request,
+        CancellationToken cancellationToken)
     {
-        var timestamp = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time")).ToString("yyyy-MM-dd'T'HH:mm:ss");;
-        
-        _logger.LogInformation("POST api/Sales/Order - Starting order creation process. Timestamp ({timestamp})", timestamp);
-        
+        var timestamp = TimeZoneInfo
+            .ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"))
+            .ToString("yyyy-MM-dd'T'HH:mm:ss");
+
+        _logger.LogInformation("POST api/Sales/Order - Starting order creation process. Timestamp ({timestamp})",
+            timestamp);
+
         var validationResult = await _validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
@@ -41,22 +45,67 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
 
         var IdSale = Guid.NewGuid();
         request.setIdOrder(IdSale);
-        
-        _logger.LogInformation("POST api/Sales/Order - Validated order request, proceeding to stock validation for Order ID: {IdSale}. Timestamp ({timestamp})", IdSale, timestamp);
-        
-        await _rabbitMQPublisher.Publish(request, "orderValidationStockQueue", IdSale);
-        var responseStock = await _rabbitMQConsumer.Consume("orderResponseValidationStockQueue", request.getIdOrder());
 
-        if (!responseStock.IsStockAvailable)
+        _rabbitMQPublisher.Publish(request, "orderValidationStockQueue", IdSale);
+        _logger.LogInformation(
+            "POST api/Sales/Order - Validated order request, proceeding to stock validation for Order ID: {IdSale}. Timestamp ({timestamp})",
+            IdSale, timestamp);
+
+        try
         {
-            _logger.LogWarning("POST api/Sales/Order - Stock is not available for one or more items. " + "\n" +
-                               "The order ID: {IdSale}. Timestamp ({timestamp}}", IdSale, timestamp);
-            return Result.Fail<CreateOrderResponse>("Stock is not available for one or more items.");
-        }
+            var maxRetry = 4;
+            var timeout = 10;
+            Infrastructure.RabbitMQConfig.DTOs.RequestCreateOrderValidationResponse responseStock = null;
+            
 
-        var order = new Order(responseStock.IdOrder, request.Items, responseStock.ValueAmount);
-        var response = new CreateOrderResponse(order.IdSale, order.OrdemItens, order.TotalAmount, order.Status, order.CreatedAt);
-        _logger.LogInformation("POST api/Sales/Order - Order created successfully with ID: {IdOrder}. Timestamp ({timestamp})", response.IdOrder, timestamp);
-        return Result.Ok(response);
+            for (int i = 0; i < maxRetry; i++)
+            {
+                try
+                {
+                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeout)); // Definindo o tempo limite de espera da resposta
+                    responseStock = await Task.Run(() => 
+                                         _rabbitMQConsumer.Consume("orderResponseValidationStockQueue", request.getIdOrder()),
+                                        cts.Token);
+                                    
+                                    if(responseStock != null)
+                                        break;
+                                    
+                }
+                catch (OperationCanceledException e)
+                {
+                    if(i == maxRetry -1)
+                       break;
+                }
+                    await Task.Delay(3000, cancellationToken);
+                    
+            }
+            if (responseStock == null)
+            {
+                return Result.Fail<CreateOrderResponse>("Timeout: No response from stock validation service.");
+            }
+            if (!responseStock.IsStockAvailable)
+            {
+                _logger.LogWarning("POST api/Sales/Order - Stock is not available for one or more items. " + "\n" +
+                                   "The order ID: {IdSale}. Timestamp ({timestamp})", IdSale, timestamp);
+                return Result.Fail<CreateOrderResponse>("Stock is not available for one or more items.");
+            }
+            
+
+            var order = new Order(responseStock.IdOrder, request.Items, responseStock.ValueAmount);
+            var response = new CreateOrderResponse(order.IdSale, order.OrdemItens, order.TotalAmount, order.Status,
+                order.CreatedAt);
+            _logger.LogInformation(
+                "POST api/Sales/Order - Order created successfully with ID: {IdOrder}. Timestamp ({timestamp})",
+                response.IdOrder, timestamp);
+            return Result.Ok(response);
+        }
+        catch (OperationCanceledException e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+        
+        
     }
 }

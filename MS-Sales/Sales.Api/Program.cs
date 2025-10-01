@@ -32,7 +32,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommandHandler).Assembly));
 builder.Services.AddScoped<RabbitMQPublisher>();
-builder.Services.AddScoped<ConfigRabbitMQConsumer>();
+builder.Services.AddSingleton<ConfigRabbitMQConsumer>();
 builder.Services.AddScoped<ConfigRabbitMQ>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
