@@ -25,11 +25,14 @@ public class StockValidationHandler : IRequestHandler<StockValidationQuery, Resu
                 .GetProductPriceIfStockAvailable(listItemsValidation.ElementAt(i).IdProduct,
                     listItemsValidation.ElementAt(i).Quantity);
 
-            if (result == null)
-                return Result.Fail(response + "");
+            if (result == 0)
+                return Result.Fail<StockValidationResponse>(
+                    new Error("Stock is not available for product ID: " +
+                              listItemsValidation.ElementAt(i).IdProduct));
             
-            totalAmout += result.Value * listItemsValidation.ElementAt(i).Quantity;
+                totalAmout += result * listItemsValidation.ElementAt(i).Quantity;
         }
+            
         
         response.Available = true;
         response.TotalAmount = totalAmout;

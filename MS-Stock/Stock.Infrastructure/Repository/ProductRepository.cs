@@ -44,14 +44,14 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
-    public async Task<decimal?> GetProductPriceIfStockAvailable(Guid productId, int quantity)
+    public async Task<decimal> GetProductPriceIfStockAvailable(Guid productId, int quantity)
     {
         var product =  await _context.Stock
             .FirstOrDefaultAsync(p => p.IdProduct == productId && p.StockQuantity >= quantity);
-        if (product != null)
-            return product.Price;
+        if (product == null)
+            return 0;
         
-        return null;
+        return product.Price;
     }
 
 public async Task SaveChangesAsync()

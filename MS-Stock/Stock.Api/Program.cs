@@ -39,6 +39,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Creat
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetProductByIdQuery).Assembly));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<StockValidationHandler>();
+builder.Services.AddScoped<GenericConsumer>();
 
 var app = builder.Build();
 
@@ -55,10 +56,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
 using var scope = app.Services.CreateScope();
 var stockValidationHandler = scope.ServiceProvider.GetRequiredService<StockValidationHandler>();
-var consumer = new ValidationStockAvailableConsumer(stockValidationHandler);
+var genericConsumer = scope.ServiceProvider.GetRequiredService<GenericConsumer>();
+var consumer = new ValidationStockAvailableConsumer(stockValidationHandler, genericConsumer);
 
-_ = Task.Run(async () => await consumer.Consumer<string>());
-app.Run();
+_ = Task.Run(async () =>
+{
+    try
+    {
+        await consumer.Consumer<StockValidationQuery>("orderValidationStockQueue");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro no consumer: {ex.Message}");
+    }
+});
+
+ app.Run();

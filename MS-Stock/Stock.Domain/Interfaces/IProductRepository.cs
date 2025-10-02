@@ -10,6 +10,6 @@ public interface IProductRepository
     Task<Product?> GetProductByIdAsNoTracking(Guid productId);
     Task<IEnumerable<Product?>> GetAllProductsAsNoTracking();
     
-    Task<decimal?> GetProductPriceIfStockAvailable(Guid productId, int quantity);
+    Task<decimal> GetProductPriceIfStockAvailable(Guid productId, int quantity);
     Task SaveChangesAsync();
 }

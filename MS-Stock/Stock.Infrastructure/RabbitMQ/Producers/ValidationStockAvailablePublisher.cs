@@ -30,6 +30,7 @@ public class ValidationStockAvailablePublisher
             var message = JsonSerializer.Serialize(messageReturnValidationStock);
             var body = System.Text.Encoding.UTF8.GetBytes(message);
             
+            var correlationId = basicProperties.CorrelationId;
             
             await channel.BasicPublishAsync(
                 exchange: "",

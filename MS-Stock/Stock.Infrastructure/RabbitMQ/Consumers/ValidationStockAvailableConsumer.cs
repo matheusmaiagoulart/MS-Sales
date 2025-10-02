@@ -1,9 +1,6 @@
-using System.Text;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using FluentResults;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using Stock.Application.Products.Queries.StockValidation;
 using Stock.Infrastructure.RabbitMQ.Producers;
 
@@ -12,84 +9,49 @@ namespace Stock.Infrastructure.RabbitMQ.Consumers;
 public class ValidationStockAvailableConsumer
 {
     private readonly StockValidationHandler _stockValidationHandler;
+    private readonly GenericConsumer _genericConsumer;
+    const string queueResponse = "orderResponseValidationStockQueue";
 
-    public ValidationStockAvailableConsumer(StockValidationHandler stockValidationHandler)
+    public ValidationStockAvailableConsumer(StockValidationHandler stockValidationHandler,
+        GenericConsumer genericConsumer)
     {
         _stockValidationHandler = stockValidationHandler;
+        _genericConsumer = genericConsumer;
     }
 
 
-    public async Task<String> Consumer<T>()
+    public async Task Consumer<T>(string queueName)
     {
-        var factory = new ConnectionFactory()
+        var consumerQueue = new GenericConsumer();
+        await consumerQueue.Consumer<StockValidationQuery>(queueName, async (result) =>
         {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "guest",
-            Password = "guest",
-            RequestedConnectionTimeout = TimeSpan.FromSeconds(20)
-        };
-
-        try
-        {
-            var response = new StockValidationResponse(Guid.Empty, false, 0);
-            var connection = await factory.CreateConnectionAsync();
-            var channel = await connection.CreateChannelAsync();
-
-            var consumer = new AsyncEventingBasicConsumer(channel);
-            consumer.ReceivedAsync += async (model, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-
-                var items = JsonSerializer.Deserialize<StockValidationQuery>(message);
-                var result = await _stockValidationHandler.Handle(items, CancellationToken.None); // Chama o handler para validar o estoque
-
-                var correlationId = ea.BasicProperties.CorrelationId;
-                var replyTo = ea.BasicProperties.ReplyTo;
-                var responseProps = new BasicProperties()
-                {
-                    CorrelationId = correlationId,
-                    ReplyTo = replyTo
-                };
-                
-                channel.BasicAckAsync(ea.DeliveryTag, false);
-                
-                if (result.IsFailed)
-                {
-                    Console.WriteLine("Falha na validação de estoque para o pedido: " + items.IdOrder);
-                    // Cria resposta de falha
-                     response = new StockValidationResponse(items.IdOrder, false, 0);
-                }
-                else
-                {
-                    Console.WriteLine("Resultado: " + result.Value.TotalAmount + " Disponível: " +
-                                      result.Value.Available + " IdOrder: " + result.Value.IdOrder);
-                    response = result.Value;
-                } 
-                await ReturnResponseStockValidation(response, responseProps);
-                Console.WriteLine(response + "dskfjs");
-            };
-
-            var result = await channel.BasicConsumeAsync(
-                queue: "orderValidationStockQueue",
-                autoAck: false,
-                consumer: consumer
-            );
+            // Chama o handler para validar o estoque
+            var resultValidation = await _stockValidationHandler.Handle(result, CancellationToken.None);
             
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erro ao conectar: {ex.Message}");
-        }
+            var responseFinal = new StockValidationResponse(result.IdOrder, false, 0);
+            if (resultValidation.IsSuccess)
+            {
+                Console.WriteLine("Estoque disponível: " + resultValidation.Value.Available);
+                responseFinal = resultValidation.Value;
+            }
+            else
+            {
+                Console.WriteLine("Estoque indisponível para o pedido: " + responseFinal.IdOrder);
+            }
 
-        return "Erro ao iniciar o consumidor.";
+            var responseProps = new BasicProperties() { ReplyTo = queueResponse };
+
+           await ReturnResponseStockValidation(responseFinal, responseProps);
+        });
     }
+
 
     public async Task ReturnResponseStockValidation(StockValidationResponse response, BasicProperties basicProperties)
     {
         var publisherReponse = new ValidationStockAvailablePublisher(); //Instanciando a classe de publicacao
-        var messageReturnValidationStock = new StockValidationResponse(response.IdOrder, response.Available, response.TotalAmount); //Adicionando os dados de retorno
+        var messageReturnValidationStock =
+            new StockValidationResponse(response.IdOrder, response.Available,
+                response.TotalAmount); //Adicionando os dados de retorno
         Console.WriteLine(JsonSerializer.Serialize(messageReturnValidationStock) + " Mensagem de retorno");
         await publisherReponse.Publisher(messageReturnValidationStock, basicProperties);
     }

@@ -13,7 +13,7 @@ public class RabbitMQPublisher
         _configRabbitMq = configRabbitMq;
     }
 
-    public async Task Publish<T>(T order, string queue, Guid idOrder)
+    public async Task Publish<T>(T order, string queuePub, string? queueResponse, Guid idOrder)
     {
         var factory = new ConnectionFactory()
             {
@@ -28,11 +28,10 @@ public class RabbitMQPublisher
          
          var props = new BasicProperties()
          {
-             CorrelationId = idOrder.ToString(),
-             ReplyTo = "orderResponseValidationStockQueue"
+             ReplyTo = queueResponse
          };
         
-        await channel.QueueDeclareAsync(queue: queue,
+        await channel.QueueDeclareAsync(queue: queuePub,
             durable: false,
             exclusive: false,
             autoDelete: false,
@@ -43,7 +42,7 @@ public class RabbitMQPublisher
         
         await channel.BasicPublishAsync(
             exchange: "",
-            routingKey: queue,
+            routingKey: queuePub,
             basicProperties: props,
             mandatory: false,
             body: body,
