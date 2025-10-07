@@ -1,17 +1,11 @@
 using System.Text.Json;
 using RabbitMQ.Client;
+using Sales.Application.Services;
 
-namespace Sales.Infrastructure.RabbitMQConfig.Publisher;
+namespace Sales.Infrastructure.RabbitMQ.Producer;
 
-public class RabbitMQPublisher
+public class GenericProducer : IRabbitMqPublisher
 {
-
-    private readonly ConfigRabbitMQ _configRabbitMq;
-
-    public RabbitMQPublisher(ConfigRabbitMQ configRabbitMq)
-    {
-        _configRabbitMq = configRabbitMq;
-    }
 
     public async Task Publish<T>(T order, string queuePub, string? queueResponse, Guid idOrder)
     {

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Concurrent;
-using System.Text.Json;
+using Sales.Application.Services;
 using Sales.Domain.DTOs;
-using Sales.Infrastructure.RabbitMQ.ConfigConnection;
 
-namespace Sales.Infrastructure.RabbitMQConfig.Consumer;
+namespace Sales.Infrastructure.RabbitMQ.Consumer;
 
-public class ConfigRabbitMQConsumer
+public class ValidationStockResponseConsumer : IValidationStockResponseConsumer
 {
     private readonly ConcurrentDictionary<Guid, RequestCreateOrderValidationResponse> _responsesList = new();
 
@@ -13,9 +12,8 @@ public class ConfigRabbitMQConsumer
     {
         var existsResponse = GetResponseByIdOrder(idOrder);
         if (existsResponse != null)
-        {
             return existsResponse;
-        }
+        
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(tokenSourceTimeout)); // Tempo máximo de espera pela resposta na fila
         var tcs = new TaskCompletionSource<RequestCreateOrderValidationResponse>(); //Classe para gerenciar a tarefa assíncrona e retornar o valor caso seja concluída com sucesso, ou null se passar de 10 segundos
         

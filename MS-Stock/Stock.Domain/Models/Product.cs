@@ -39,8 +39,6 @@ namespace Stock.Domain.Models
 
         public void DecreaseStock(int quantity)
         {
-            if (quantity <= 0)
-                throw new ArgumentException("Quantity must be greater than zero.");
 
             if (StockQuantity < quantity)
                 throw new InvalidOperationException("Insufficient stock.");

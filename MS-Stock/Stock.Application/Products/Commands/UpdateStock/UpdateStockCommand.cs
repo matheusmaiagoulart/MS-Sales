@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
+using Stock.Application.Products.Queries.StockValidation;
 
 namespace Stock.Application.Products.Commands.UpdateStock;
 
-public record UpdateStockCommand(int Quantity, Guid IdProduct) : IRequest<Result>;
+public record UpdateStockCommand(Guid IdOrder, List<OrderItemDTO> Items) : IRequest<Result<UpdateStockCommandResponse>>;

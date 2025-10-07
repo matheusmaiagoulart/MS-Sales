@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
-    <ProjectReference Include="..\Sales.Infrastructure\Sales.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -39,7 +39,7 @@ namespace Sales.Domain.Models
         public void UpdateStatusOrder(StatusSale newStatus)
         {
             Status = newStatus;
-            UpdatedAt = DateTime.UtcNow;
+            UpdatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"));
         }
         
     }

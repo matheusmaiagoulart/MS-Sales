@@ -2,10 +2,11 @@
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Stock.Infrastructure.RabbitMQ.Interfaces;
 
 namespace Stock.Infrastructure.RabbitMQ.Consumers;
 
-public class GenericConsumer
+public class GenericConsumer : IGenericConsumer
 {
     public async Task Consumer<T>(string queueName, Func<T, Task> onMessag)
     {

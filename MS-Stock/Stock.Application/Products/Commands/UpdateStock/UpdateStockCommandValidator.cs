@@ -6,11 +6,8 @@ public class UpdateStockCommandValidator : AbstractValidator<UpdateStockCommand>
 {
     public UpdateStockCommandValidator()
     {
-        RuleFor(x => x.IdProduct)
-            .NotEmpty().WithMessage("IdProduct must be greater than or equal to zero.");
-        
-        RuleFor(x => x.Quantity)
-            .NotEmpty().GreaterThan(0).WithMessage("Quantity must be greater than 1");
+        RuleFor(x => x.Items.Count)
+            .GreaterThan(0).NotEmpty().WithMessage("Items must contain at least one item and quantity grater than 0.");
     }
     
 }

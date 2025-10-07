@@ -19,10 +19,23 @@ public class ProductRepository : IProductRepository
         await _context.Stock.AddAsync(product);
     }
 
+    public async Task<bool> DecreaseStock(Guid idProduct, int quantity)
+    {
+        var result = await  _context.Stock
+            .Where(x => x.IdProduct == idProduct && x.StockQuantity >= quantity)
+            .ExecuteUpdateAsync(set => set
+                .SetProperty(p => p.StockQuantity, p =>  p.StockQuantity - quantity)
+                .SetProperty(p => p.UpdatedAt, p => DateTime.UtcNow)
+            );
+
+        return result > 0;
+    }
+    
     public void UpdateStock(Product product)
     {
         _context.Stock.Update(product);
     }
+
 
     public async Task<Product?> GetProductById(Guid productId)
     {

@@ -5,6 +5,7 @@ namespace Stock.Domain.Interfaces;
 public interface IProductRepository
 {
     Task CreateProduct(Product product);
+    Task<bool> DecreaseStock(Guid idProduct, int quantity);
     void UpdateStock(Product product);
     Task<Product?> GetProductById(Guid productId);
     Task<Product?> GetProductByIdAsNoTracking(Guid productId);

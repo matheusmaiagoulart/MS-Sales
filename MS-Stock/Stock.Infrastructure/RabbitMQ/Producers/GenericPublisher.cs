@@ -1,11 +1,12 @@
 using System.Text.Json;
 using RabbitMQ.Client;
+using Stock.Infrastructure.RabbitMQ.Interfaces;
 
 namespace Stock.Infrastructure.RabbitMQ.Producers;
 
-public class ValidationStockAvailablePublisher
+public class GenericPublisher : IGenericPublisher
 {
-    public async Task Publisher<T>(T messageReturnValidationStock, BasicProperties basicProperties)
+    public async Task Publisher<T>(T messageResponse, BasicProperties basicProperties)
     {
         var factory = new ConnectionFactory()
         {
@@ -27,10 +28,9 @@ public class ValidationStockAvailablePublisher
                 autoDelete: false,
                 arguments: null);
             
-            var message = JsonSerializer.Serialize(messageReturnValidationStock);
+            var message = JsonSerializer.Serialize(messageResponse);
             var body = System.Text.Encoding.UTF8.GetBytes(message);
             
-            var correlationId = basicProperties.CorrelationId;
             
             await channel.BasicPublishAsync(
                 exchange: "",

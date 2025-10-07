@@ -2,12 +2,13 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sales.Application.Orders.Commands.CreateOrder;
+using Sales.Application.Services;
 using Sales.Domain.Interfaces;
 using Sales.Infrastructure.Data.Context;
-using Sales.Infrastructure.RabbitMQConfig;
-using Sales.Infrastructure.RabbitMQConfig.Consumer;
-using Sales.Infrastructure.RabbitMQConfig.Publisher;
+using Sales.Infrastructure.RabbitMQ.Consumer;
+using Sales.Infrastructure.RabbitMQ.Producer;
 using Sales.Infrastructure.Repository;
+using Sales.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,11 +32,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommandHandler).Assembly));
-builder.Services.AddScoped<RabbitMQPublisher>();
-builder.Services.AddSingleton<ConfigRabbitMQConsumer>();
-builder.Services.AddScoped<ConfigRabbitMQ>();
+builder.Services.AddScoped<IRabbitMqPublisher, GenericProducer>();
+builder.Services.AddScoped<IStockValidationService, StockValidationService>();
+builder.Services.AddSingleton<IValidationStockResponseConsumer, ValidationStockResponseConsumer>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
+builder.Services.AddScoped<IDecreaseStockResponseConsumer, DecreaseStockResponseConsumer>();
+
 
 var app = builder.Build();
 
