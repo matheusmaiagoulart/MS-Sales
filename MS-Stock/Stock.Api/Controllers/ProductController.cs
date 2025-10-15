@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Stock.Application.Products.Commands.CreateProduct;
 using Stock.Application.Products.Commands.UpdateProduct;
 using Stock.Application.Products.Commands.UpdateStock;
@@ -35,6 +36,10 @@ public class ProductController : ControllerBase
         }
         catch (Exception e)
         {
+            if (e is SqlException)
+            {
+                return StatusCode(500, "A network error occurred while trying to connect to the database");
+            }
             return StatusCode(500, "An error occurred while processing your request: " + e.Message);
         }
     }

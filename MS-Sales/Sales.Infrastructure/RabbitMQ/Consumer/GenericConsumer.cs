@@ -2,10 +2,11 @@
 using System.Text.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Sales.Application.Services;
 
 namespace Sales.Infrastructure.RabbitMQ.Consumer;
 
-public class GenericConsumer
+public class GenericConsumer : IGenericConsumer
 {
     public async Task Consumer<T>(string queueName, Func<T, Task> onMessag)
     {
@@ -22,17 +23,17 @@ public class GenericConsumer
         {
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
-
+            
             var consumer = new AsyncEventingBasicConsumer(channel);
             consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                var obj = JsonSerializer.Deserialize<T>(message); //Transforma para o obj necessario e envia
-                Console.WriteLine($"Mensagem recebida na fila {queueName}: {message}");
-
+                var obj = JsonSerializer.Deserialize<T>(message);
+                
                 await onMessag(obj);
                 await channel.BasicAckAsync(ea.DeliveryTag, false);
+                
             };
 
             var result = await channel.BasicConsumeAsync(
@@ -43,7 +44,7 @@ public class GenericConsumer
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error to consume queue {queueName}: {ex.Message}");
+            Console.WriteLine($"Erro ao consumir a fila {queueName}: {ex.Message}");
             throw;
         }
     }

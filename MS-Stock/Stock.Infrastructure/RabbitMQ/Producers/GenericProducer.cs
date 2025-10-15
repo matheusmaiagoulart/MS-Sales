@@ -4,7 +4,7 @@ using Stock.Infrastructure.RabbitMQ.Interfaces;
 
 namespace Stock.Infrastructure.RabbitMQ.Producers;
 
-public class GenericPublisher : IGenericPublisher
+public class GenericProducer : IGenericPublisher
 {
     public async Task Publisher<T>(T messageResponse, BasicProperties basicProperties)
     {
@@ -39,7 +39,6 @@ public class GenericPublisher : IGenericPublisher
                 basicProperties: basicProperties, 
                 body: body,
                 cancellationToken: CancellationToken.None);
-                
         }
         catch (Exception e)
         {

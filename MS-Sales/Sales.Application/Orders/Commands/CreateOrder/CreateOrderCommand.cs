@@ -17,4 +17,4 @@ public class CreateOrderCommand : IRequest<Result<CreateOrderResponse>>
     {
         return IdOrder;
     }
-} 
+}

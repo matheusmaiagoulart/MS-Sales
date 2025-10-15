@@ -18,7 +18,7 @@ namespace Sales.Infrastructure.Data.MappingTables
                 p.ToTable("OrdemItem");
             });
             e.Property(o => o.TotalAmount).IsRequired().HasColumnType("decimal(18,2)");
-            e.Property(o => o.Status).IsRequired();
+            e.Property(o => o.Status).IsRequired().HasConversion<string>();
             e.Property(o => o.CreatedAt).IsRequired();
             e.Property(o => o.UpdatedAt).IsRequired();
             e.ToTable("Orders");

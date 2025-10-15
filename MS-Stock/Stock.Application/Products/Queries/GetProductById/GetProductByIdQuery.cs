@@ -3,5 +3,12 @@ using MediatR;
 
 namespace Stock.Application.Products.Queries.GetProductById;
 
-public record GetProductByIdQuery(Guid Id) 
-    : IRequest<Result<GetProductByIdResponse>>;
+public class GetProductByIdQuery() : IRequest<Result<GetProductByIdResponse>>
+{
+    public Guid Id { get; set; }
+    
+    public GetProductByIdQuery(Guid id) : this()
+    {
+        Id = id;
+    }
+}

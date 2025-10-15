@@ -4,7 +4,7 @@ using Sales.Application.Services;
 
 namespace Sales.Infrastructure.RabbitMQ.Producer;
 
-public class GenericProducer : IRabbitMqPublisher
+public class GenericProducer : IGenericPublisher
 {
 
     public async Task Publish<T>(T order, string queuePub, string? queueResponse, Guid idOrder)
@@ -41,16 +41,8 @@ public class GenericProducer : IRabbitMqPublisher
             mandatory: false,
             body: body,
             cancellationToken: CancellationToken.None);
-        
-        EventoConfirmacao<T>(order);
     }
     
-   
-
-    public void EventoConfirmacao<T>(T order)
-    {
-        Console.WriteLine("Mensagem enviada para a fila RabbitMQ." + JsonSerializer.Serialize<T>(order));
-    }
     
 
 }

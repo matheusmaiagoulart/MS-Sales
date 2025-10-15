@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using FluentResults;
 using Sales.Application.Services;
+using Sales.Application.Utils;
 using Sales.Domain.DTOs;
 
 namespace Sales.Infrastructure.RabbitMQ.Consumer;
@@ -7,43 +9,58 @@ namespace Sales.Infrastructure.RabbitMQ.Consumer;
 public class ValidationStockResponseConsumer : IValidationStockResponseConsumer
 {
     private readonly ConcurrentDictionary<Guid, RequestCreateOrderValidationResponse> _responsesList = new();
+    private readonly IGenericConsumer _genericConsumer;
 
-    public async Task<RequestCreateOrderValidationResponse> Consume(string queue, Guid idOrder, int tokenSourceTimeout)
+    public ValidationStockResponseConsumer(IGenericConsumer genericConsumer)
     {
-        var existsResponse = GetResponseByIdOrder(idOrder);
-        if (existsResponse != null)
-            return existsResponse;
-        
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(tokenSourceTimeout)); // Tempo máximo de espera pela resposta na fila
-        var tcs = new TaskCompletionSource<RequestCreateOrderValidationResponse>(); //Classe para gerenciar a tarefa assíncrona e retornar o valor caso seja concluída com sucesso, ou null se passar de 10 segundos
-        
-        cts.Token.Register(() => tcs.TrySetResult(null)); // Se o tempo esgotar, retorna null (Só consegue atribuir valor uma vez)
-        
-        var genericConsumer = new GenericConsumer();
-        await genericConsumer.Consumer<RequestCreateOrderValidationResponse>(queue, async (result) =>
-        {
-
-            _responsesList.TryAdd(result.IdOrder, result);
-            Console.WriteLine("Mensagem recebida da fila: " + result);
-            var responseByIdOrder = GetResponseByIdOrder(idOrder);
-            if (responseByIdOrder != null)
+        _genericConsumer = genericConsumer;
+        _genericConsumer.Consumer<RequestCreateOrderValidationResponse>(
+            QueuesRabbitMQ.RESPONSE_VALIDATION_STOCK, async (result) =>
             {
-                tcs.SetResult(responseByIdOrder); // Retorna a resposta para o chamador
+                _responsesList[result.IdOrder] = result; // Adding or updating the response in the dictionary
             }
+        );
+    }
 
-        }); 
-        return await tcs.Task;
-}
+    public async Task<Result<RequestCreateOrderValidationResponse>> Consume(string queue, Guid idOrder,
+        int timeoutSeconds)
+    {
+        var responseDictonary = GetResponseInDictionary(idOrder);
+        if (responseDictonary != null)
+            return responseDictonary;
 
-    private RequestCreateOrderValidationResponse? GetResponseByIdOrder(Guid idOrder)
+        try
+        {
+            var maxRetry = timeoutSeconds;
+            var timeout = 1; // Seconds
+
+            for (int i = 0; i < maxRetry; i++)
+            {
+                var response = GetResponseInDictionary(idOrder);
+                if (response != null)
+                {
+                    Console.WriteLine($"Message found in list: {response}");
+                    return Result.Ok(response);
+                }
+
+                if (i < maxRetry - 1)
+                    await Task.Delay(TimeSpan.FromSeconds(timeout));
+            }
+        }
+        catch (OperationCanceledException e)
+        {
+            return Result.Fail<RequestCreateOrderValidationResponse>("Operation canceled: " + e.Message);
+        }
+
+        return Result.Fail<RequestCreateOrderValidationResponse>("Timeout: No response received within the specified time.");
+    }
+
+
+    private RequestCreateOrderValidationResponse? GetResponseInDictionary(Guid idOrder)
     {
         if (_responsesList.TryRemove(idOrder, out var response))
             return response;
-        
+
         return null;
     }
-    
-
-    
-    
 }

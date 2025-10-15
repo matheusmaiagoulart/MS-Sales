@@ -1,6 +1,8 @@
-﻿using FluentResults;
+﻿using System.Net;
+using FluentResults;
 using FluentValidation;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Stock.Application.Products.Commands.CreateProduct;
 using Stock.Domain.Interfaces;
 using Stock.Domain.Models;
@@ -29,25 +31,34 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
             return Result.Fail<CreateProductResponse>(errors);
         }
 
-        var product = new Product
-        (
-            request.Name,
-            request.Description,
-            request.Price,
-            request.StockQuantity
-        );
+        try
+        {
+            var product = new Product
+            (
+                request.Name,
+                request.Description,
+                request.Price,
+                request.StockQuantity
+            );
 
-        await _productRepository.CreateProduct(product);
-        await _productRepository.SaveChangesAsync();
+            await _productRepository.CreateProduct(product);
+            await _productRepository.SaveChangesAsync();
 
-        var response = new CreateProductResponse(
-            product.IdProduct,
-            product.Name,
-            product.Description,
-            product.Price,
-            product.StockQuantity,
-            product.CreatedAt);
+            var response = new CreateProductResponse(
+                product.IdProduct,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.StockQuantity,
+                product.CreatedAt);
 
-        return Result.Ok(response);
+            return Result.Ok(response);
+        }
+        catch (Exception e)
+        {
+            return Result.Fail<CreateProductResponse>(e.Message);
+            
+        }
+        
     }
 }

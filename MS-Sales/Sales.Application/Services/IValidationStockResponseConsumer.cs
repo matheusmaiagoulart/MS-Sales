@@ -1,9 +1,10 @@
-﻿using Sales.Application.Orders.Commands.CreateOrder;
+﻿using FluentResults;
+using Sales.Application.Orders.Commands.CreateOrder;
 using Sales.Domain.DTOs;
 
 namespace Sales.Application.Services;
 
 public interface IValidationStockResponseConsumer
 {
-    Task<RequestCreateOrderValidationResponse> Consume(string queue, Guid idOrder, int tokenSourceTimeout);
+    Task<Result<RequestCreateOrderValidationResponse>> Consume(string queue, Guid idOrder, int timeoutSeconds);
 }

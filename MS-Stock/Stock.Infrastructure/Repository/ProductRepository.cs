@@ -31,7 +31,7 @@ public class ProductRepository : IProductRepository
         return result > 0;
     }
     
-    public void UpdateStock(Product product)
+    public void UpdateProduct(Product product)
     {
         _context.Stock.Update(product);
     }

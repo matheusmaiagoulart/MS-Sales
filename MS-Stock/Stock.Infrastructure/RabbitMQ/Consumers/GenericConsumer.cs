@@ -22,7 +22,6 @@ public class GenericConsumer : IGenericConsumer
 
         try
         {
-            
             var connection = await factory.CreateConnectionAsync();
             var channel = await connection.CreateChannelAsync();
 
@@ -32,16 +31,12 @@ public class GenericConsumer : IGenericConsumer
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 var obj = JsonSerializer.Deserialize<T>(message);
-                Console.WriteLine($"Mensagem recebida na fila {queueName}: {message}");
                 
                 await onMessag(obj);
-                
                 await channel.BasicAckAsync(ea.DeliveryTag, false);
-                
-                
             };
 
-            var result = await channel.BasicConsumeAsync(
+            await channel.BasicConsumeAsync(
                 queue: queueName,
                 autoAck: false,
                 consumer: consumer

@@ -15,14 +15,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Formatting.Json.Rendered" Version="1.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Orders\Queries\" />
   </ItemGroup>
 
 </Project>

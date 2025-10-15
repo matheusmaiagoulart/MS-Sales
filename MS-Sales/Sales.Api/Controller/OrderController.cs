@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sales.Application.Orders.Commands.CreateOrder;
+using Sales.Application.Orders.Queries.GetOrderById;
 
 namespace Sales.Api.Controller;
 
@@ -22,6 +23,23 @@ public class OrderController : ControllerBase
         {
             return Ok(result.Value);
         }
-        return BadRequest(result.Errors);
+        
+        return BadRequest(result.Errors.Select(x => x.Message));
     }
+
+    [HttpGet("{idOrder:guid}")]
+    public async Task<IActionResult> GetOrderById([FromRoute] Guid idOrder)
+    {
+        var command = new GetOrderById(idOrder);
+
+        var result = await _mediator.Send(command);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        
+        return BadRequest(result.Errors.Select(x => x.Message));
+    }
+    
+    
 }

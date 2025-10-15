@@ -6,6 +6,6 @@ public interface IOrderRepository
 {
     Task CreateOrder(Order order);
     Task UpdateStatusOrder(Order order);
-    Task<Order?> GetOrderById(int orderId);
+    Task<Order?> GetOrderById(Guid orderId);
     Task SaveChangesAsync();
 }

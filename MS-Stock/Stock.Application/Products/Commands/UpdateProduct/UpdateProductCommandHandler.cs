@@ -29,30 +29,37 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             return Result.Fail<UpdateProductResponse>(errors);
         }
 
-        var product = await _productRepository.GetProductById(request.Id);
-        if (product == null)
-            return Result.Fail("Product not found");
+        try
+        {
+            var product = await _productRepository.GetProductById(request.Id);
+            if (product == null)
+                return Result.Fail<UpdateProductResponse>("Product not found");
 
-        product.UpdateProduct
-        (
-            request.Name ?? product.Name,
-            request.Description ?? product.Description,
-            request.Price ?? product.Price
-        );
+            product.UpdateProduct
+            (
+                request.Name ?? product.Name,
+                request.Description ?? product.Description,
+                request.Price ?? product.Price
+            );
 
-        _productRepository.UpdateStock(product);
-        await _productRepository.SaveChangesAsync();
+            _productRepository.UpdateProduct(product);
+            await _productRepository.SaveChangesAsync();
 
-        var response = new UpdateProductResponse(
-            product.IdProduct,
-            product.Name,
-            product.Description,
-            product.Price,
-            product.StockQuantity,
-            product.CreatedAt,
-            product.UpdatedAt
-        );
+            var response = new UpdateProductResponse(
+                product.IdProduct,
+                product.Name,
+                product.Description,
+                product.Price,
+                product.StockQuantity,
+                product.CreatedAt,
+                product.UpdatedAt
+            );
 
-        return Result.Ok(response);
+            return Result.Ok(response);
+        }
+        catch (Exception e)
+        {
+           return Result.Fail<UpdateProductResponse>(e.Message);
+        }
     }
 }

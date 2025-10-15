@@ -7,6 +7,7 @@ using Stock.Application.Products.Queries.GetProductById;
 using Stock.Application.Products.Queries.StockValidation;
 using Stock.Domain.Interfaces;
 using Stock.Infrastructure.Data.Context;
+using Stock.Infrastructure.Middleware;
 using Stock.Infrastructure.RabbitMQ.Config;
 using Stock.Infrastructure.RabbitMQ.Consumers;
 using Stock.Infrastructure.RabbitMQ.Interfaces;
@@ -37,7 +38,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetPr
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<StockValidationHandler>();
 builder.Services.AddScoped<IGenericConsumer, GenericConsumer>();
-builder.Services.AddScoped<IGenericPublisher, GenericPublisher>();
+builder.Services.AddScoped<IGenericPublisher, GenericProducer>();
 builder.Services.AddScoped<UpdateStockCommandHandler>();
 
 
@@ -50,6 +51,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<MiddlewareApplication.ErrorHandleMiddleware>(); // Adiciona o middleware
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
@@ -60,7 +62,8 @@ using var scope = app.Services.CreateScope();
 var stockValidationHandler = scope.ServiceProvider.GetRequiredService<StockValidationHandler>();
 var genericConsumer = scope.ServiceProvider.GetRequiredService<IGenericConsumer>();
 var genericPublisher = scope.ServiceProvider.GetRequiredService<IGenericPublisher>();
-var consumer = new ValidationStockAvailableConsumer(stockValidationHandler, genericConsumer, genericPublisher);
+var logger = scope.ServiceProvider.GetRequiredService<ILogger<ValidationStockAvailableConsumer>>();
+var consumer = new ValidationStockAvailableConsumer(stockValidationHandler, genericConsumer, genericPublisher, logger);
 
 _ = Task.Run(async () =>
 {
@@ -78,7 +81,8 @@ using var scope2 = app.Services.CreateScope();
 var decreaseStockHandler = scope.ServiceProvider.GetRequiredService<UpdateStockCommandHandler>();
 var genericConsumer2 = scope.ServiceProvider.GetRequiredService<IGenericConsumer>();
 var genericPublisher2 = scope.ServiceProvider.GetRequiredService<IGenericPublisher>();
-var consumer2 = new DecreaseStockConsumer(genericConsumer2, decreaseStockHandler, genericPublisher2);
+var logger2 = scope.ServiceProvider.GetRequiredService<ILogger<DecreaseStockConsumer>>();
+var consumer2 = new DecreaseStockConsumer(genericConsumer2, decreaseStockHandler, genericPublisher2, logger2);
 
 _ = Task.Run(async () =>
 {

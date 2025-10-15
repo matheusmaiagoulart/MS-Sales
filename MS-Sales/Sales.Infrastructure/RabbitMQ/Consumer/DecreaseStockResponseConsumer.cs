@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using FluentResults;
 using Sales.Application.Services;
+using Sales.Application.Utils;
 using Sales.Domain.DTOs;
 
 namespace Sales.Infrastructure.RabbitMQ.Consumer;
@@ -7,54 +9,62 @@ namespace Sales.Infrastructure.RabbitMQ.Consumer;
 public class DecreaseStockResponseConsumer : IDecreaseStockResponseConsumer
 {
     private readonly ConcurrentDictionary<Guid, UpdateStockResponse> _responsesList = new();
-    
-    public async Task<UpdateStockResponse> Consume(string queue, Guid idOrder, int tokenSourceTimeout)
+    private readonly TaskCompletionSource<UpdateStockResponse> _tcs = new();
+    private readonly IGenericConsumer _genericConsumer;
+    public DecreaseStockResponseConsumer(IGenericConsumer genericConsumer)
     {
+        _genericConsumer = genericConsumer;
+
+        _genericConsumer.Consumer<UpdateStockResponse>(
+            QueuesRabbitMQ.RESPONSE_DECREASE_STOCK, async (result) =>
+            {
+                Console.WriteLine($"Mensagem recebida: {result.IdOrder}");
+                _responsesList[result.IdOrder] = result; //Add or Update if key exists
+            }
+        );
+    }
+
+    public async Task<Result<UpdateStockResponse>> Consume(string queue, Guid idOrder, int timeoutSeconds)
+    {
+
+        var responseDictonary = GetResponseInDictionary(idOrder);
+        if (responseDictonary != null)
+            return responseDictonary;
+        
         try
         {
-
-        
-        // Verify if the response already exists in the dictionary
-        var existsResponse = GetResponseByIdOrder(idOrder);
-        if (existsResponse != null)
-            return existsResponse;
-        
-        // Set timeout for waiting the response in the queue
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(tokenSourceTimeout)); 
-        
-        // Use TaskCompletionSource to manage the async task and return the value if completed, or null if it times out
-        var tcs = new TaskCompletionSource<UpdateStockResponse>(); 
-        
-        // Set manually the value if the timeout is reached
-        cts.Token.Register(() => tcs.TrySetResult(null)); 
-        
-        var genericConsumer = new GenericConsumer();
-        await genericConsumer.Consumer<UpdateStockResponse>(queue, async (result) =>
-        {
-
-            _responsesList.TryAdd(result.IdOrder, result);
-            Console.WriteLine("Mensagem recebida da fila: " + result);
-            var responseByIdOrder = GetResponseByIdOrder(idOrder);
-            if (responseByIdOrder != null)
+            var maxRetry = timeoutSeconds;
+            var timeout = 1; // seconds
+            
+            
+            for (int i = 0; i < maxRetry; i++)
             {
-                tcs.SetResult(responseByIdOrder); // Retorna a resposta para o chamador
+                var response = GetResponseInDictionary(idOrder);
+                if (response != null)
+                {
+                    return Result.Ok(response);
+                }
+
+                if (i < maxRetry - 1)
+                    await Task.Delay(TimeSpan.FromSeconds(timeout));
+                
             }
-
-        }); 
-        return await tcs.Task;
         }
-        catch (Exception e)
+        catch (OperationCanceledException e)
         {
-            Console.WriteLine(e);
-            throw;
+            return Result.Fail<UpdateStockResponse>("Operation canceled: " + e.Message);
         }
+        
+        return Result.Fail<UpdateStockResponse>("Timeout: No response received within the specified time." );
     }
 
-    private UpdateStockResponse? GetResponseByIdOrder(Guid idOrder)
-    {
-        if (_responsesList.TryRemove(idOrder, out var response))
-            return response;
-        
-        return null;
-    }
+
+    private UpdateStockResponse? GetResponseInDictionary(Guid idOrder)
+        {
+            if (_responsesList.TryRemove(idOrder, out var response))
+                return response;
+
+            return null;
+        }
+    
 }

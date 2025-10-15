@@ -22,7 +22,7 @@ public class OrderRepository : IOrderRepository
         await _context.Orders.AddAsync(order);
     }
 
-    public async Task<Order?> GetOrderById(int orderId)
+    public async Task<Order?> GetOrderById(Guid orderId)
     {
         return await _context.Orders
             .FindAsync(orderId);

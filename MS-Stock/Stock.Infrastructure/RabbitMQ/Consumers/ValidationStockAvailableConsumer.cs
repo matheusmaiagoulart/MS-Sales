@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentResults;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using Stock.Application.Products.Commands.UpdateStock;
 using Stock.Application.Products.Queries.StockValidation;
@@ -18,14 +19,16 @@ public class ValidationStockAvailableConsumer
     private readonly IGenericConsumer _genericConsumer;
     private readonly IGenericPublisher _genericPublisher;
     private const string queueResponse = QueuesConfig.RabbitMQQueues.RESPONSE_VALIDATION_STOCK;
+    private readonly ILogger<ValidationStockAvailableConsumer> _logger;
 
     public ValidationStockAvailableConsumer(
         IRequestHandler<StockValidationQuery, Result<StockValidationResponse>> stockValidationHandler,
-        IGenericConsumer genericConsumer, IGenericPublisher genericPublisher)
+        IGenericConsumer genericConsumer, IGenericPublisher genericPublisher, ILogger<ValidationStockAvailableConsumer> logger)
     {
         _stockValidationHandler = stockValidationHandler;
         _genericConsumer = genericConsumer;
         _genericPublisher = genericPublisher;
+        _logger = logger;
     }
 
 
@@ -39,12 +42,12 @@ public class ValidationStockAvailableConsumer
             var responseFinal = new StockValidationResponse(result.IdOrder, false, 0);
             if (resultValidation.IsSuccess)
             {
-                Console.WriteLine("Estoque disponível: " + resultValidation.Value.Available);
+                _logger.LogInformation("Stock available for order: " + resultValidation.Value.IdOrder);
                 responseFinal = resultValidation.Value;
             }
             else
             {
-                Console.WriteLine("Estoque indisponível para o pedido: " + responseFinal.IdOrder);
+                _logger.LogError("Stock not available for order: " + responseFinal.IdOrder);
             }
 
             var responseProps = new BasicProperties() { ReplyTo = queueResponse };
@@ -62,7 +65,7 @@ public class ValidationStockAvailableConsumer
             response.Available,
             response.TotalAmount
         );
-        Console.WriteLine(JsonSerializer.Serialize(messageReturnValidationStock) + " Mensagem de retorno");
+        _logger.LogInformation("Sending stock validation response for order: " + response.IdOrder);
         await _genericPublisher.Publisher(messageReturnValidationStock, basicProperties);
     }
 }
