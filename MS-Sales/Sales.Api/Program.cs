@@ -34,7 +34,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateOrderCommandHandler).Assembly));
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrderByIdHandler).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetOrderByIdHandler
+    ).Assembly));
 builder.Services.AddSingleton<IGenericPublisher, GenericProducer>();
 builder.Services.AddSingleton<IGenericConsumer, GenericConsumer>();
 builder.Services.AddSingleton<IValidationStockResponseConsumer, ValidationStockResponseConsumer>();
