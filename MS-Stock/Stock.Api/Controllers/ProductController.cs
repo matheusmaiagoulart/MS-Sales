@@ -84,7 +84,7 @@ public class ProductController : ControllerBase
         }
     }
     
-    [HttpGet("GetProductById{id}")]
+    [HttpGet("GetProductById/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]    
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
