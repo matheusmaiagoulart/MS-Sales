@@ -39,6 +39,8 @@ O fluxo entre os microsserviços funciona da seguinte forma:
 6. O serviço **Sales** valida a resposta, e, se positiva, conclui a venda.
 
 Essa comunicação assíncrona assegura **escalabilidade, resiliência e isolamento entre serviços**.
+![system-design-microsservicos](https://github.com/user-attachments/assets/b15fb7f5-3d36-4bb2-87aa-8cee1b0e1b31)
+
 
 ---
 
