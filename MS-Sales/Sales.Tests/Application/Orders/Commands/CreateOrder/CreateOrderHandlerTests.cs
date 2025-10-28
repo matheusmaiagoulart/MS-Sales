@@ -50,16 +50,16 @@ public class CreateOrderHandlerTests : IClassFixture<OrderFixture>
         
         var decreaseStockResponse = new UpdateStockResponse(Guid.NewGuid(), true);
 
-        _orderFixture.MockValidationStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+        _orderFixture.MockStockValidationRequest
+            .Setup(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Ok(stockValidationResponse));
 
-        _orderFixture.MockDecreaseStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+        _orderFixture.MockStockDecreaseRequest
+            .Setup(x => x.SendDecreaseStockRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Ok(decreaseStockResponse));
 
         _orderFixture.MockRepository.Setup(x => x.SaveChangesAsync())
-            .Throws(new Exception());
+            .ThrowsAsync(new Exception());
 
         // Act
         var service = _orderFixture.CreateOrderCommandHandler();
@@ -79,22 +79,22 @@ public class CreateOrderHandlerTests : IClassFixture<OrderFixture>
         _orderFixture.MockRepository.Reset();
         // Arrange
         var command = _orderFixture.CreateOrderCommandDTO();
-
-        _orderFixture.MockValidationStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+    
+        _orderFixture.MockStockValidationRequest
+            .Setup(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Fail("Stock validation failed"));
-
+    
         // Act
         var service = _orderFixture.CreateOrderCommandHandler();
         var result = await service.Handle(command, CancellationToken.None);
-
+    
         // Assert
         Assert.True(result.IsFailed);
         Assert.NotEmpty(result.Errors);
         _orderFixture.MockRepository.Verify(x => x.CreateOrder(It.IsAny<Order>()), Times.Never);
         _orderFixture.MockRepository.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
-
+    
     [Fact(DisplayName = "Must return error when stock is not available")]
     public async Task CreateOrder_MustReturnError_WhenStockIsNotAvailable()
     {
@@ -108,22 +108,22 @@ public class CreateOrderHandlerTests : IClassFixture<OrderFixture>
             IsStockAvailable = false,
             ValueAmount = 100m
         };
-
-        _orderFixture.MockValidationStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
-            .ReturnsAsync(Result.Ok(stockValidationResponse));
-
+    
+        _orderFixture.MockStockValidationRequest
+            .Setup(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()))
+            .ReturnsAsync(Result.Fail("Stock is not available"));
+    
         // Act
         var service = _orderFixture.CreateOrderCommandHandler();
         var result = await service.Handle(command, CancellationToken.None);
-
+    
         // Assert
         Assert.True(result.IsFailed);
         Assert.Contains(result.Errors, e => e.Message.Contains("Stock is not available"));
         _orderFixture.MockRepository.Verify(x => x.CreateOrder(It.IsAny<Order>()), Times.Never);
         _orderFixture.MockRepository.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
-
+    
     [Fact(DisplayName = "Must return error when stock decrease fails")]
     public async Task CreateOrder_MustReturnError_WhenStockDecreaseFails()
     {
@@ -137,26 +137,26 @@ public class CreateOrderHandlerTests : IClassFixture<OrderFixture>
             IsStockAvailable = true,
             ValueAmount = 100m
         };
-
-        _orderFixture.MockValidationStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+    
+        _orderFixture.MockStockValidationRequest
+            .Setup(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Ok(stockValidationResponse));
-
-        _orderFixture.MockDecreaseStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+    
+        _orderFixture.MockStockDecreaseRequest
+            .Setup(x => x.SendDecreaseStockRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Fail("Stock decrease failed"));
-
+    
         // Act
         var service = _orderFixture.CreateOrderCommandHandler();
         var result = await service.Handle(command, CancellationToken.None);
-
+    
         // Assert
         Assert.True(result.IsFailed);
         Assert.NotEmpty(result.Errors);
         _orderFixture.MockRepository.Verify(x => x.CreateOrder(It.IsAny<Order>()), Times.Never);
         _orderFixture.MockRepository.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
-
+    
     [Fact(DisplayName = "Must create order successfully when all validations pass")]
     public async Task CreateOrder_MustCreateOrderSuccessfully_WhenAllValidationsPass()
     {
@@ -173,25 +173,26 @@ public class CreateOrderHandlerTests : IClassFixture<OrderFixture>
         };
         
         var decreaseStockResponse = new UpdateStockResponse(Guid.NewGuid(), true);
-
-        _orderFixture.MockValidationStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+    
+        _orderFixture.MockStockValidationRequest
+            .Setup(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Ok(stockValidationResponse));
-
-        _orderFixture.MockDecreaseStockConsumer
-            .Setup(x => x.Consume(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<int>()))
+    
+        _orderFixture.MockStockDecreaseRequest
+            .Setup(x => x.SendDecreaseStockRequest(command, It.IsAny<Guid>()))
             .ReturnsAsync(Result.Ok(decreaseStockResponse));
-
+    
         // Act
         var service = _orderFixture.CreateOrderCommandHandler();
         var result = await service.Handle(command, CancellationToken.None);
-
+    
         // Assert
         Assert.True(result.IsSuccess);
         Assert.False(result.IsFailed);
         Assert.NotNull(result.Value);
         _orderFixture.MockRepository.Verify(x => x.CreateOrder(It.IsAny<Order>()), Times.Once);
         _orderFixture.MockRepository.Verify(x => x.SaveChangesAsync(), Times.Once);
-        _orderFixture.MockGenericPublisher.Verify(x => x.Publish(It.IsAny<object>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Guid>()), Times.Exactly(2));
+        _orderFixture.MockStockValidationRequest.Verify(x => x.SendStockValidationRequest(command, It.IsAny<Guid>()), Times.Once());
+        _orderFixture.MockStockDecreaseRequest.Verify(x => x.SendDecreaseStockRequest(command, It.IsAny<Guid>()), Times.Once());
     }
 }

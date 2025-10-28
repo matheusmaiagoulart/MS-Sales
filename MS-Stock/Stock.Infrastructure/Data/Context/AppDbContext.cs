@@ -15,5 +15,6 @@ namespace Stock.Infrastructure.Data.Context
         }
 
         public DbSet<Product> Stock { get; set; }
+        public DbSet<StockReservation> StockReservations { get; set; }
     }
 }

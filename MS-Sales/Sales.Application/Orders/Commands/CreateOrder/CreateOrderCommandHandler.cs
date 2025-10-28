@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Sales.Application.Services;
 using Sales.Application.Utils;
+using Sales.Domain.DTOs;
 using Sales.Domain.Interfaces;
 using Sales.Domain.Models;
 
@@ -13,10 +14,9 @@ namespace Sales.Application.Orders.Commands.CreateOrder;
 public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Result<CreateOrderResponse>>
 {
     private readonly IValidator<CreateOrderCommand> _validator;
-    private readonly IGenericPublisher _genericPublisher;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
-    private readonly IDecreaseStockResponseConsumer _consumerDecreaseStockResponse;
-    private readonly IValidationStockResponseConsumer _consumerStockValidationResponse;
+    private readonly IStockValidationRequest _stockValidationRequest;
+    private readonly IStockDecreaseRequest _stockDecreaseRequest;
     private readonly IOrderRepository _orderRepository;
 
     public CreateOrderCommandHandler
@@ -24,17 +24,15 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         ILogger<CreateOrderCommandHandler> logger,
         IValidator<CreateOrderCommand> validator,
         IOrderRepository orderRepository,
-        IGenericPublisher genericPublisher,
-        IValidationStockResponseConsumer consumerStockValidationResponse,
-        IDecreaseStockResponseConsumer consumerDecreaseStockResponse
+        IStockDecreaseRequest stockDecreaseRequest,
+        IStockValidationRequest stockValidationRequest
     )
     {
         _logger = logger;
         _validator = validator;
         _orderRepository = orderRepository;
-        _genericPublisher = genericPublisher;
-        _consumerDecreaseStockResponse = consumerDecreaseStockResponse;
-        _consumerStockValidationResponse = consumerStockValidationResponse;
+        _stockValidationRequest = stockValidationRequest;
+        _stockDecreaseRequest = stockDecreaseRequest;
     }
 
     
@@ -58,29 +56,18 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
         request.setIdOrder(IdSale);
 
         // Send message to validate stock
-        await _genericPublisher.Publish(request, QueuesRabbitMQ.REQUEST_VALIDATION_STOCK, QueuesRabbitMQ.RESPONSE_VALIDATION_STOCK, IdSale);
-        _logger.LogInformation("POST api/Sales/Order - Validated order request, proceeding to stock validation for Order ID: {IdSale}. Timestamp ({timestamp})", IdSale, timestamp);
-        
-        var responseStockValidation= await _consumerStockValidationResponse.Consume(QueuesRabbitMQ.RESPONSE_VALIDATION_STOCK, IdSale, 30);
-        if(responseStockValidation.IsFailed)
+        Result<RequestCreateOrderValidationResponse> responseStockValidation = await _stockValidationRequest.SendStockValidationRequest(request, IdSale);
+        if (responseStockValidation.IsFailed)
+        {
+            _logger.LogError("POST api/Sales/Order - Stock validation request failed. Timestamp ({timestamp})", timestamp);
             return Result.Fail<CreateOrderResponse>(responseStockValidation.Errors);
-        if (!responseStockValidation.Value.IsStockAvailable)
-            return Result.Fail<CreateOrderResponse>("Stock is not available for one or more products in the order.");
-        
-        // Send message to decrease stock
-        await _genericPublisher.Publish(request, QueuesRabbitMQ.REQUEST_DECREASE_STOCK, QueuesRabbitMQ.RESPONSE_DECREASE_STOCK, IdSale);
-        _logger.LogInformation("POST api/Sales/Order - Stock validation successful, proceeding to decrease stock for Order ID: {IdSale}. Timestamp ({timestamp})", IdSale, timestamp);
-        
-        var resultDecreaseStock = await _consumerDecreaseStockResponse.Consume(QueuesRabbitMQ.RESPONSE_DECREASE_STOCK, IdSale, 30);
-        if (resultDecreaseStock.IsFailed)
-        {
-            _logger.LogError("POST api/Sales/Order - Stock decreased request failed. Timestamp ({timestamp})", timestamp);
-            return Result.Fail<CreateOrderResponse>(resultDecreaseStock.Errors);
         }
-        if (!resultDecreaseStock.Value.IsSaleSuccess || resultDecreaseStock.ToResult().IsFailed)
+        // Send message to decrease stock
+        Result<UpdateStockResponse> updateStockResponse = await _stockDecreaseRequest.SendDecreaseStockRequest(request, IdSale);
+        if (updateStockResponse.IsFailed)
         {
-            _logger.LogError("POST api/Sales/Order - Stock decreased request failed. Timestamp ({timestamp})", timestamp);
-            return Result.Fail<CreateOrderResponse>("An error occurred while decreasing stock.");
+            _logger.LogError("POST api/Sales/Order - Stock validation request failed. Timestamp ({timestamp})", timestamp);
+            return Result.Fail<CreateOrderResponse>(updateStockResponse.Errors);
         }
         
         _logger.LogInformation("POST api/Sales/Order - Stock decreased successfully for Order ID: {IdSale}. Timestamp ({timestamp})", IdSale, timestamp);

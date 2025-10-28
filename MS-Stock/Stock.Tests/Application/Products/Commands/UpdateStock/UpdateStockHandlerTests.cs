@@ -17,7 +17,10 @@ public class UpdateStockHandlerTests : IClassFixture<ProductFixture>
         // Arrange
         var updateStockCommand = _productFixture.UpdateStockCommandDTO(Guid.NewGuid(), Guid.NewGuid(),3);
         
-        _productFixture.MockRepository.Setup(x => x.DecreaseStock(It.IsAny<Guid>(), It.IsAny<int>()))
+        _productFixture.MockRepository.Setup(x => x.TryReserve(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()))
+            .ReturnsAsync(true);
+        
+        _productFixture.MockRepository.Setup(x => x.ConfirmReservation(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()))
             .ReturnsAsync(true);
 
         // Act 
@@ -27,7 +30,9 @@ public class UpdateStockHandlerTests : IClassFixture<ProductFixture>
         // Assert
         Assert.True(result.IsSuccess);
         Assert.Empty(result.Errors);
-        _productFixture.MockRepository.Verify(x => x.DecreaseStock(It.IsAny<Guid>(), It.IsAny<int>()), 
+        _productFixture.MockRepository.Verify(x => x.TryReserve(It.IsAny<Guid>(), It.IsAny<Guid>(),It.IsAny<int>()), 
+            Times.Exactly(updateStockCommand.Items.Count));
+        _productFixture.MockRepository.Verify(x => x.ConfirmReservation(It.IsAny<Guid>(), It.IsAny<Guid>(),It.IsAny<int>()), 
             Times.Exactly(updateStockCommand.Items.Count));
     }
     
@@ -39,9 +44,16 @@ public class UpdateStockHandlerTests : IClassFixture<ProductFixture>
         var productId = Guid.NewGuid();
         var updateStockCommand = _productFixture.UpdateStockCommandDTO(productId, Guid.NewGuid(), 3);
         
-        _productFixture.MockRepository
-            .Setup(x => x.DecreaseStock(It.IsAny<Guid>(), It.IsAny<int>()))
-            .ReturnsAsync(false);
+        _productFixture.MockRepository.Setup(x => x.TryReserve(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()))
+            .ReturnsAsync(true);
+        
+        _productFixture.MockRepository.Setup(x => x.ConfirmReservation(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>()))
+            .ThrowsAsync(new Exception());
+
+        _productFixture.MockRepository.Setup(x =>
+            x.CancelReservation(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>())).ReturnsAsync(true);
+        
+        
         
         // Act
         var service = _productFixture.UpdateStockCommandHandler();
@@ -51,7 +63,11 @@ public class UpdateStockHandlerTests : IClassFixture<ProductFixture>
         Assert.True(result.IsFailed);
         Assert.NotEmpty(result.Errors);
         
-        _productFixture.MockRepository.Verify(x => x.DecreaseStock(updateStockCommand.Items.First().IdProduct, updateStockCommand.Items.First().Quantity),
+        _productFixture.MockRepository.Verify(x => x.TryReserve(updateStockCommand.IdOrder,updateStockCommand.Items.First().IdProduct, updateStockCommand.Items.First().Quantity),
+            Times.Once);
+        _productFixture.MockRepository.Verify(x => x.ConfirmReservation(updateStockCommand.IdOrder,updateStockCommand.Items.First().IdProduct, updateStockCommand.Items.First().Quantity),
+            Times.Once);
+        _productFixture.MockRepository.Verify(x => x.CancelReservation(updateStockCommand.IdOrder,updateStockCommand.Items.First().IdProduct, updateStockCommand.Items.First().Quantity),
             Times.Once);
         
         _productFixture.MockRepository.Verify(

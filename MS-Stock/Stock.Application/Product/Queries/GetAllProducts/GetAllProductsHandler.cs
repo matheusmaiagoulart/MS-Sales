@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 using MediatR;
-using Stock.Domain.Interfaces;
+using Stock.Domain.Models.Interfaces;
 
 namespace Stock.Application.Products.Queries.GetAllProducts;
 

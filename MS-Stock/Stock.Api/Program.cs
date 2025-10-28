@@ -5,7 +5,8 @@ using Stock.Application.Products.Commands.UpdateProduct;
 using Stock.Application.Products.Commands.UpdateStock;
 using Stock.Application.Products.Queries.GetProductById;
 using Stock.Application.Products.Queries.StockValidation;
-using Stock.Domain.Interfaces;
+using Stock.Domain.Models.Interfaces;
+using Stock.Infrastructure.BackgroundServices.ClearReservedStockExpired;
 using Stock.Infrastructure.Data.Context;
 using Stock.Infrastructure.Middleware;
 using Stock.Infrastructure.RabbitMQ.Config;
@@ -21,7 +22,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Stock API", 
+        Version = "v1"
+    });
+});
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
@@ -41,6 +49,8 @@ builder.Services.AddScoped<IGenericConsumer, GenericConsumer>();
 builder.Services.AddScoped<IGenericPublisher, GenericProducer>();
 builder.Services.AddScoped<UpdateStockCommandHandler>();
 
+builder.Services.AddHostedService<ClearReservedStockExpiredProcess>();
+
 
 var app = builder.Build();
 
@@ -48,7 +58,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Stock API v1");
+    });
 }
 
 app.UseMiddleware<MiddlewareApplication.ErrorHandleMiddleware>(); // Adiciona o middleware

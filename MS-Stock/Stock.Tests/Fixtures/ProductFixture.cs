@@ -8,8 +8,8 @@ using Stock.Application.Products.Commands.UpdateStock;
 using Stock.Application.Products.Queries.GetAllProducts;
 using Stock.Application.Products.Queries.GetProductById;
 using Stock.Application.Products.Queries.StockValidation;
-using Stock.Domain.Interfaces;
 using Stock.Domain.Models;
+using Stock.Domain.Models.Interfaces;
 
 namespace Stock.Tests.Fixtures;
 

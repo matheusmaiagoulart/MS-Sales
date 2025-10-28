@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Sales.Application.Orders.Commands.CreateOrder;
+using Sales.Application.Orders.Commands.CreateOrder.Requests;
 using Sales.Application.Orders.Queries.GetOrderById;
 using Sales.Application.Services;
 using Sales.Domain.Interfaces;
@@ -42,6 +43,8 @@ builder.Services.AddSingleton<IValidationStockResponseConsumer, ValidationStockR
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IValidator<CreateOrderCommand>, CreateOrderCommandValidator>();
 builder.Services.AddScoped<IValidator<GetOrderById>, GetOrderByIdValidator>();
+builder.Services.AddScoped<IStockValidationRequest, StockValidationRequestService>();
+builder.Services.AddScoped<IStockDecreaseRequest, StockDescreaseRequestService>();
 
 builder.Services.AddSingleton<IDecreaseStockResponseConsumer, DecreaseStockResponseConsumer>();
 

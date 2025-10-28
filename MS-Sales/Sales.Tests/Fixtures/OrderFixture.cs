@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Sales.Application.Orders.Commands.CreateOrder;
+using Sales.Application.Orders.Commands.CreateOrder.Requests;
 using Sales.Application.Orders.Queries.GetOrderById;
 using Sales.Application.Services;
 using Sales.Domain.Interfaces;
@@ -15,10 +16,16 @@ public class OrderFixture : IDisposable
     public Mock<IOrderRepository> MockRepository { get; }
     public Mock<IGenericPublisher> MockGenericPublisher { get; }
     public Mock<ILogger<CreateOrderCommandHandler>> MockLogger { get; }
-    public Mock<IDecreaseStockResponseConsumer> MockDecreaseStockConsumer { get; }
-    public Mock<IValidationStockResponseConsumer> MockValidationStockConsumer { get; }
+    
+    public Mock<IValidationStockResponseConsumer> MockValidationStockResponseConsumer { get; }
+    public Mock<IDecreaseStockResponseConsumer> MockDecreaseStockResponseConsumer { get; }
+    
     public CreateOrderCommandValidator CreateOrderValidator { get; }
     public GetOrderByIdValidator GetOrderByIdValidator { get; }
+    
+    public Mock<IStockDecreaseRequest> MockStockDecreaseRequest { get; }
+    
+    public Mock<IStockValidationRequest> MockStockValidationRequest { get; }
     public Faker Faker { get; }
 
     public OrderFixture()
@@ -26,9 +33,11 @@ public class OrderFixture : IDisposable
         MockRepository = new Mock<IOrderRepository>();
         MockGenericPublisher = new Mock<IGenericPublisher>();
         MockLogger = new Mock<ILogger<CreateOrderCommandHandler>>();
-        MockDecreaseStockConsumer = new Mock<IDecreaseStockResponseConsumer>();
-        MockValidationStockConsumer = new Mock<IValidationStockResponseConsumer>();
+        MockStockDecreaseRequest = new Mock<IStockDecreaseRequest>();
+        MockStockValidationRequest = new Mock<IStockValidationRequest>();
         CreateOrderValidator = new CreateOrderCommandValidator();
+        MockValidationStockResponseConsumer = new Mock<IValidationStockResponseConsumer>();
+        MockDecreaseStockResponseConsumer = new Mock<IDecreaseStockResponseConsumer>();
         GetOrderByIdValidator = new GetOrderByIdValidator();
         Faker = new Faker();
     }
@@ -44,6 +53,25 @@ public class OrderFixture : IDisposable
             }
         };
     }
+    
+
+    public StockValidationRequestService CreateStockValidationRequestService()
+    {
+        return new StockValidationRequestService(
+            MockGenericPublisher.Object,
+            MockValidationStockResponseConsumer.Object,
+            new Mock<ILogger<StockValidationRequestService>>().Object
+        );
+    }
+
+    public StockDescreaseRequestService CreateStockDecreaseRequestService()
+    {
+        return new StockDescreaseRequestService(
+            MockGenericPublisher.Object,
+            MockDecreaseStockResponseConsumer.Object,
+            new Mock<ILogger<StockDescreaseRequestService>>().Object
+        );
+    }
 
     public GetOrderById CreateGetOrderByIdQuery(Guid? idOrder = null)
     {
@@ -56,9 +84,8 @@ public class OrderFixture : IDisposable
             MockLogger.Object,
             CreateOrderValidator,
             MockRepository.Object,
-            MockGenericPublisher.Object,
-            MockValidationStockConsumer.Object,
-            MockDecreaseStockConsumer.Object
+            MockStockDecreaseRequest.Object,
+            MockStockValidationRequest.Object
         );
     }
 

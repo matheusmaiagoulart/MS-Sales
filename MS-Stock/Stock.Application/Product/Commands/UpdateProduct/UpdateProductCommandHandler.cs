@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using FluentValidation;
 using MediatR;
-using Stock.Domain.Interfaces;
+using Stock.Domain.Models.Interfaces;
 
 namespace Stock.Application.Products.Commands.UpdateProduct;
 

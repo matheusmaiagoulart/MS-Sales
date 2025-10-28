@@ -4,8 +4,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Data.SqlClient;
 using Stock.Application.Products.Commands.CreateProduct;
-using Stock.Domain.Interfaces;
 using Stock.Domain.Models;
+using Stock.Domain.Models.Interfaces;
 using Result = FluentResults.Result;
 
 namespace Stock.Application.Products.Commands.CreateProduct;

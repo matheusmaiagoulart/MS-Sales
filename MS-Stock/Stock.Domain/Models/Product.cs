@@ -9,6 +9,8 @@ namespace Stock.Domain.Models
         public string Description { get; private set; }
         public decimal Price { get; private set; }
         public int StockQuantity { get; private set; }
+        
+        public int ReservedQuantity { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }
@@ -27,6 +29,7 @@ namespace Stock.Domain.Models
             StockQuantity = stockQuantity;
             CreatedAt = DateTime.Now;
             UpdatedAt = null;
+            ReservedQuantity = 0;
         }
 
         public void UpdateProduct(string name, string description, decimal price)
@@ -34,16 +37,6 @@ namespace Stock.Domain.Models
             Name = name;
             Description = description;
             Price = price;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        public void DecreaseStock(int quantity)
-        {
-
-            if (StockQuantity < quantity)
-                throw new InvalidOperationException("Insufficient stock.");
-
-            StockQuantity -= quantity;
             UpdatedAt = DateTime.UtcNow;
         }
     }

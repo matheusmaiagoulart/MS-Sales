@@ -13,6 +13,7 @@ namespace Stock.Infrastructure.Data.MappingTables
             e.Property(p => p.Description).IsRequired().HasMaxLength(500);
             e.Property(p => p.Price).IsRequired().HasColumnType("decimal(18,2)");
             e.Property(p => p.StockQuantity).IsRequired();
+            e.Property(p => p.ReservedQuantity);
             e.ToTable("Products");
         }
     }
