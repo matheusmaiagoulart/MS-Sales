@@ -1,0 +1,7 @@
+﻿services:
+  gateway:
+    image: gateway
+    build:
+      context: .
+      dockerfile: Gateway/Dockerfile
+
