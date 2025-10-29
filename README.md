@@ -14,6 +14,7 @@ Ele representa uma aplicação composta por dois microsserviços principais — 
 - **Entity Framework Core / LINQ**  
 - **MediatR** (desacoplamento via CQRS)  
 - **FluentValidation** (validação das requisições)  
+- **YARP** (Gateway para roteamento de requisições aos microsserviços)  
 * **2PC (Two-Phase Commit)**
 
   * **Fase 1:** Reserva de estoque (`ReservedQuantity`)
@@ -55,6 +56,16 @@ Um **serviço em segundo plano** executa a cada **2 minutos** para:
 * Identificar itens com status `Reserved` expirados;
 * Reverter suas quantidades ao estoque;
 * Atualizar o status para `Expired`.
+
+---
+
+## 🚪 Gateway com YARP e Autenticação JWT
+
+* O projeto utiliza o **YARP** como gateway reverso para rotear requisições entre os microsserviços (Sales, Stock, etc).
+* O gateway implementa autenticação básica via **JWT**. Para acessar as rotas protegidas, obtenha um token JWT através do endpoint de autenticação e inclua-o no header `Authorization: Bearer <token>` nas requisições.
+* Exemplo de fluxo:
+  1. Realize login via `/auth/login` no Gateway para obter o token JWT.
+  2. Utilize o token para acessar rotas protegidas dos microsserviços via Gateway.
 
 ---
 
@@ -116,4 +127,3 @@ Cada microsserviço é independente e se comunica via **filas assíncronas**, ga
 Projeto desenvolvido para fins de estudo e demonstração.
 **Autor:** Matheus Maia Goulart 🧑‍💻
 🔗 [LinkedIn](https://www.linkedin.com/in/matheusmaiagoulart/)
-
