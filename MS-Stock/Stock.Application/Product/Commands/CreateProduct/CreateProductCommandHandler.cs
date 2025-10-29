@@ -1,14 +1,10 @@
-﻿using System.Net;
-using FluentResults;
+﻿using FluentResults;
 using FluentValidation;
 using MediatR;
-using Microsoft.Data.SqlClient;
-using Stock.Application.Products.Commands.CreateProduct;
-using Stock.Domain.Models;
-using Stock.Domain.Models.Interfaces;
+using Stock.Application.Interfaces;
 using Result = FluentResults.Result;
 
-namespace Stock.Application.Products.Commands.CreateProduct;
+namespace Stock.Application.Product.Commands.CreateProduct;
 
 public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, Result<CreateProductResponse>>
 {
@@ -33,7 +29,7 @@ public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand,
 
         try
         {
-            var product = new Product
+            var product = new Domain.Models.Product
             (
                 request.Name,
                 request.Description,

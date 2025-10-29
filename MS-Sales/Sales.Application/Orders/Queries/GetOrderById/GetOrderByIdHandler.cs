@@ -25,7 +25,6 @@ public class GetOrderByIdHandler : IRequestHandler<GetOrderById, Result<Order>>
                 .Select(e => new Error(e.ErrorMessage));
             return Result.Fail<Order>(errors);
         }
-
         try
         {
             var order = await _orderRepository.GetOrderById(request.IdOrder);

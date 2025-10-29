@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Stock.Application.Products.Commands.CreateProduct;
-using Stock.Application.Products.Commands.UpdateProduct;
-using Stock.Application.Products.Commands.UpdateStock;
-using Stock.Application.Products.Queries.GetAllProducts;
-using Stock.Application.Products.Queries.GetProductById;
+using Stock.Application.Product.Commands.CreateProduct;
+using Stock.Application.Product.Commands.UpdateProduct;
+using Stock.Application.Product.Commands.UpdateStock;
+using Stock.Application.Product.Queries.GetAllProducts;
+using Stock.Application.Product.Queries.GetProductById;
 
 namespace Stock.Api.Controllers;
 

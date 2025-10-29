@@ -1,8 +1,8 @@
 using FluentResults;
 using MediatR;
-using Stock.Domain.Models.Interfaces;
+using Stock.Application.Interfaces;
 
-namespace Stock.Application.Products.Queries.StockValidation;
+namespace Stock.Application.Product.Queries.StockValidation;
 
 public class StockValidationHandler : IRequestHandler<StockValidationQuery, Result<StockValidationResponse>>
 {
@@ -13,7 +13,6 @@ public class StockValidationHandler : IRequestHandler<StockValidationQuery, Resu
     }
     public async Task<Result<StockValidationResponse>> Handle(StockValidationQuery request, CancellationToken cancellationToken)
     {
-        
         var listItemsValidation = request.Items.DistinctBy(x => x.IdProduct).ToList();
         decimal totalAmout = 0;
         
@@ -30,9 +29,8 @@ public class StockValidationHandler : IRequestHandler<StockValidationQuery, Resu
                     new Error("Stock is not available for product ID: " +
                               listItemsValidation.ElementAt(i).IdProduct));
             
-                totalAmout += result * listItemsValidation.ElementAt(i).Quantity;
+            totalAmout += result * listItemsValidation.ElementAt(i).Quantity;
         }
-            
         
         response.Available = true;
         response.TotalAmount = totalAmout;

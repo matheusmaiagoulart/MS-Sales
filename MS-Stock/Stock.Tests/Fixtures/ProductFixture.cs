@@ -2,14 +2,14 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Stock.Application.Products.Commands.CreateProduct;
-using Stock.Application.Products.Commands.UpdateProduct;
-using Stock.Application.Products.Commands.UpdateStock;
-using Stock.Application.Products.Queries.GetAllProducts;
-using Stock.Application.Products.Queries.GetProductById;
-using Stock.Application.Products.Queries.StockValidation;
+using Stock.Application.Interfaces;
+using Stock.Application.Product.Commands.CreateProduct;
+using Stock.Application.Product.Commands.UpdateProduct;
+using Stock.Application.Product.Commands.UpdateStock;
+using Stock.Application.Product.Queries.GetAllProducts;
+using Stock.Application.Product.Queries.GetProductById;
+using Stock.Application.Product.Queries.StockValidation;
 using Stock.Domain.Models;
-using Stock.Domain.Models.Interfaces;
 
 namespace Stock.Tests.Fixtures;
 
@@ -61,11 +61,11 @@ public class ProductFixture : IDisposable
         return new GetProductByIdQuery(id ?? Faker.Random.Guid());
     }
     
-    public StockValidationQuery StockValidationQuery(Guid? idOrder = null, List<OrderItemDTO>? items = null)
+    public StockValidationQuery StockValidationQuery(Guid? idOrder = null, List<OrderItemDto>? items = null)
     {
-        var orderItems = items ?? new List<OrderItemDTO>
+        var orderItems = items ?? new List<OrderItemDto>
         {
-            new OrderItemDTO
+            new OrderItemDto
             {
                 IdProduct = Faker.Random.Guid(),
                 Quantity = Faker.Random.Int(1, 100)
@@ -97,7 +97,7 @@ public class ProductFixture : IDisposable
     public UpdateStockCommand UpdateStockCommandDTO(Guid? IdOrder = null, Guid? idProduct = null,
         int? stockQuantity = null, int? countItems = null)
     {
-        var items = new List<OrderItemDTO>();
+        var items = new List<OrderItemDto>();
         
         var itemCount = countItems ?? 1;
 
@@ -105,7 +105,7 @@ public class ProductFixture : IDisposable
         {
             for (int i = 0; i < itemCount; i++)
             {
-                items.Add(new OrderItemDTO
+                items.Add(new OrderItemDto
                 {
                     IdProduct = idProduct ?? Faker.Random.Guid(),
                     Quantity = stockQuantity ?? Faker.Random.Int(1, 100)

@@ -1,4 +1,4 @@
-namespace Stock.Application.Products.Queries.StockValidation;
+namespace Stock.Application.Product.Queries.StockValidation;
 
 public record StockValidationResponse
 {

@@ -8,7 +8,6 @@ namespace Sales.Tests.Application.Orders.Commands.CreateOrder.Services;
 public class StockValidationRequestServiceTests : IClassFixture<OrderFixture>
 {
     private readonly OrderFixture _orderFixture;
-
     public StockValidationRequestServiceTests(OrderFixture orderFixture)
     {
         _orderFixture = orderFixture;

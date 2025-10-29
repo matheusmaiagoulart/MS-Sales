@@ -1,4 +1,4 @@
-﻿namespace Stock.Application.Products.Queries.GetAllProducts;
+﻿namespace Stock.Application.Product.Queries.GetAllProducts;
 
 public record GetAllProductsResponse
 (

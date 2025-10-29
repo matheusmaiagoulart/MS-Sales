@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 
-namespace Stock.Application.Products.Queries.GetProductById;
+namespace Stock.Application.Product.Queries.GetProductById;
 
 public class GetProductByIdQuery() : IRequest<Result<GetProductByIdResponse>>
 {

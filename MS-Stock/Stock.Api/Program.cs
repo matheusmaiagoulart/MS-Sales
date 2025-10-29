@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FluentValidation;
-using Stock.Application.Products.Commands.CreateProduct;
-using Stock.Application.Products.Commands.UpdateProduct;
-using Stock.Application.Products.Commands.UpdateStock;
-using Stock.Application.Products.Queries.GetProductById;
-using Stock.Application.Products.Queries.StockValidation;
-using Stock.Domain.Models.Interfaces;
+using Stock.Application.Interfaces;
+using Stock.Application.Product.Commands.CreateProduct;
+using Stock.Application.Product.Commands.UpdateProduct;
+using Stock.Application.Product.Commands.UpdateStock;
+using Stock.Application.Product.Queries.GetProductById;
+using Stock.Application.Product.Queries.StockValidation;
 using Stock.Infrastructure.BackgroundServices.ClearReservedStockExpired;
 using Stock.Infrastructure.Data.Context;
 using Stock.Infrastructure.Middleware;

@@ -19,7 +19,6 @@ public class GenericProducer : IGenericPublisher
         
          var connection = await factory.CreateConnectionAsync();
          var channel = await connection.CreateChannelAsync();
-         
          var props = new BasicProperties()
          {
              ReplyTo = queueResponse

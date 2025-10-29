@@ -3,8 +3,7 @@ using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using Stock.Application.Products.Commands.UpdateStock;
-using Stock.Application.Products.Queries.StockValidation;
+using Stock.Application.Product.Queries.StockValidation;
 using Stock.Infrastructure.RabbitMQ.Config;
 using Stock.Infrastructure.RabbitMQ.Interfaces;
 using Stock.Infrastructure.RabbitMQ.Producers;
@@ -55,8 +54,7 @@ public class ValidationStockAvailableConsumer
             await ReturnResponseStockValidation(responseFinal, responseProps);
         });
     }
-
-
+    
     public async Task ReturnResponseStockValidation(StockValidationResponse response, BasicProperties basicProperties)
     {
         var messageReturnValidationStock = new StockValidationResponse

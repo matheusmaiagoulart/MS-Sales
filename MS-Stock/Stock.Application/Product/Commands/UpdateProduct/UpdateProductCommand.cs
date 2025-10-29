@@ -1,7 +1,7 @@
 ﻿using FluentResults;
 using MediatR;
 
-namespace Stock.Application.Products.Commands.UpdateProduct;
+namespace Stock.Application.Product.Commands.UpdateProduct;
 
 public record UpdateProductCommand(): IRequest<Result<UpdateProductResponse>>
 {

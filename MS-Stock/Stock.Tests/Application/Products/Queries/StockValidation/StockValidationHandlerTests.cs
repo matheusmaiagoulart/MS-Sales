@@ -1,5 +1,5 @@
 using Moq;
-using Stock.Application.Products.Queries.StockValidation;
+using Stock.Application.Product.Queries.StockValidation;
 using Stock.Tests.Fixtures;
 
 namespace Stock.Tests.Application.Products.Queries.StockValidation;
@@ -20,10 +20,10 @@ public class StockValidationHandlerTests : IClassFixture<ProductFixture>
         var orderId = Guid.NewGuid();
         var productId1 = Guid.NewGuid();
         var productId2 = Guid.NewGuid();
-        var items = new List<OrderItemDTO>
+        var items = new List<OrderItemDto>
         {
-            new OrderItemDTO { IdProduct = productId1, Quantity = 2 },
-            new OrderItemDTO { IdProduct = productId2, Quantity = 3 }
+            new OrderItemDto { IdProduct = productId1, Quantity = 2 },
+            new OrderItemDto { IdProduct = productId2, Quantity = 3 }
         };
         var query = _productFixture.StockValidationQuery(orderId, items);
 
@@ -53,9 +53,9 @@ public class StockValidationHandlerTests : IClassFixture<ProductFixture>
         _productFixture.MockRepository.Reset();
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
-        var items = new List<OrderItemDTO>
+        var items = new List<OrderItemDto>
         {
-            new OrderItemDTO { IdProduct = productId, Quantity = 5 }
+            new OrderItemDto { IdProduct = productId, Quantity = 5 }
         };
         var query = _productFixture.StockValidationQuery(orderId, items);
 
@@ -79,10 +79,10 @@ public class StockValidationHandlerTests : IClassFixture<ProductFixture>
         _productFixture.MockRepository.Reset();
         var orderId = Guid.NewGuid();
         var productId = Guid.NewGuid();
-        var items = new List<OrderItemDTO>
+        var items = new List<OrderItemDto>
         {
-            new OrderItemDTO { IdProduct = productId, Quantity = 2 },
-            new OrderItemDTO { IdProduct = productId, Quantity = 3 }
+            new OrderItemDto { IdProduct = productId, Quantity = 2 },
+            new OrderItemDto { IdProduct = productId, Quantity = 3 }
         };
         var query = _productFixture.StockValidationQuery(orderId, items);
 

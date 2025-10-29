@@ -10,7 +10,6 @@ public class ValidationStockResponseConsumer : IValidationStockResponseConsumer
 {
     private readonly ConcurrentDictionary<Guid, RequestCreateOrderValidationResponse> _responsesList = new();
     private readonly IGenericConsumer _genericConsumer;
-
     public ValidationStockResponseConsumer(IGenericConsumer genericConsumer)
     {
         _genericConsumer = genericConsumer;
@@ -22,8 +21,7 @@ public class ValidationStockResponseConsumer : IValidationStockResponseConsumer
         );
     }
 
-    public async Task<Result<RequestCreateOrderValidationResponse>> Consume(string queue, Guid idOrder,
-        int timeoutSeconds)
+    public async Task<Result<RequestCreateOrderValidationResponse>> Consume(string queue, Guid idOrder, int timeoutSeconds)
     {
         var responseDictonary = GetResponseInDictionary(idOrder);
         if (responseDictonary != null)

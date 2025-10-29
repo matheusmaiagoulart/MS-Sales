@@ -37,7 +37,6 @@ public class StockDescreaseRequestService : IStockDecreaseRequest
             _logger.LogError("POST api/Sales/Order - Stock decreased request failed. Timestamp ({timestamp})", CommonData.GetTimestamp());
             return Result.Fail<UpdateStockResponse>("An error occurred while decreasing stock.");
         }
-
         return resultDecreaseStock;
     }
 }

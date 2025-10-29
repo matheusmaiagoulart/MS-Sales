@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32.SafeHandles;
 using Stock.Application.DTOs;
+using Stock.Application.Interfaces;
 using Stock.Domain.Models;
-using Stock.Domain.Models.Interfaces;
 using Stock.Infrastructure.Data.Context;
 
 namespace Stock.Infrastructure.Repository;

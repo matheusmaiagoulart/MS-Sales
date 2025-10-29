@@ -35,7 +35,7 @@ public class GenericConsumer : IGenericConsumer
                 await channel.BasicAckAsync(ea.DeliveryTag, false);
                 
             };
-
+            
             var result = await channel.BasicConsumeAsync(
                 queue: queueName,
                 autoAck: false,

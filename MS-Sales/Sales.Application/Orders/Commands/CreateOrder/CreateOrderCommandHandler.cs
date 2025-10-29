@@ -62,6 +62,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             _logger.LogError("POST api/Sales/Order - Stock validation request failed. Timestamp ({timestamp})", timestamp);
             return Result.Fail<CreateOrderResponse>(responseStockValidation.Errors);
         }
+        
         // Send message to decrease stock
         Result<UpdateStockResponse> updateStockResponse = await _stockDecreaseRequest.SendDecreaseStockRequest(request, IdSale);
         if (updateStockResponse.IsFailed)
@@ -80,6 +81,7 @@ public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, Res
             
             await _orderRepository.CreateOrder(order);
             await _orderRepository.SaveChangesAsync();
+            
             _logger.LogInformation("POST api/Sales/Order - Order created successfully with ID: {IdOrder}. Timestamp ({timestamp})", order.IdSale, timestamp);
             
             var response = new CreateOrderResponse(order.IdSale, order.OrdemItens, order.TotalAmount, StatusSale.COMPLETED, order.CreatedAt);

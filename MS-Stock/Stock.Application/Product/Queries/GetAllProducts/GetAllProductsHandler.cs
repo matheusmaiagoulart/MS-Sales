@@ -1,8 +1,8 @@
 ﻿using FluentResults;
 using MediatR;
-using Stock.Domain.Models.Interfaces;
+using Stock.Application.Interfaces;
 
-namespace Stock.Application.Products.Queries.GetAllProducts;
+namespace Stock.Application.Product.Queries.GetAllProducts;
 
 public class GetAllProductsHandler : IRequestHandler<GetAllProductsQuery, Result<IEnumerable<GetAllProductsResponse>>>
 {

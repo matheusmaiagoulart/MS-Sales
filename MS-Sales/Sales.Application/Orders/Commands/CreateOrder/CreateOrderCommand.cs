@@ -13,8 +13,4 @@ public class CreateOrderCommand : IRequest<Result<CreateOrderResponse>>
     {
         IdOrder = idOrder;
     }
-    public Guid getIdOrder()
-    {
-        return IdOrder;
-    }
 }

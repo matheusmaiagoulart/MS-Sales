@@ -1,4 +1,4 @@
-using Stock.Application.Products.Queries.StockValidation;
+using Stock.Application.Product.Queries.StockValidation;
 using Stock.Tests.Fixtures;
 
 namespace Stock.Tests.Application.Products.Queries.StockValidation;
@@ -29,7 +29,7 @@ public class StockValidationValidationsTests : IClassFixture<ProductFixture>
     public async Task StockValidationValidation_MustReturnError_WhenItemsListIsEmpty()
     {
         // Arrange
-        var emptyItems = new List<OrderItemDTO>();
+        var emptyItems = new List<OrderItemDto>();
         var query = _productFixture.StockValidationQuery(items: emptyItems);
 
         // Act
@@ -45,10 +45,10 @@ public class StockValidationValidationsTests : IClassFixture<ProductFixture>
     public async Task StockValidationValidation_MustReturnError_WhenItemsHaveInvalidQuantity()
     {
         // Arrange
-        var invalidItems = new List<OrderItemDTO>
+        var invalidItems = new List<OrderItemDto>
         {
-            new OrderItemDTO { IdProduct = Guid.NewGuid(), Quantity = 0 },
-            new OrderItemDTO { IdProduct = Guid.NewGuid(), Quantity = -1 }
+            new OrderItemDto { IdProduct = Guid.NewGuid(), Quantity = 0 },
+            new OrderItemDto { IdProduct = Guid.NewGuid(), Quantity = -1 }
         };
         var query = _productFixture.StockValidationQuery(items: invalidItems);
 
@@ -65,11 +65,11 @@ public class StockValidationValidationsTests : IClassFixture<ProductFixture>
     public async Task StockValidationValidation_MustReturnSuccess_WhenAllItemsHaveValidQuantity()
     {
         // Arrange
-        var validItems = new List<OrderItemDTO>
+        var validItems = new List<OrderItemDto>
         {
-            new OrderItemDTO { IdProduct = Guid.NewGuid(), Quantity = 1 },
-            new OrderItemDTO { IdProduct = Guid.NewGuid(), Quantity = 5 },
-            new OrderItemDTO { IdProduct = Guid.NewGuid(), Quantity = 10 }
+            new OrderItemDto { IdProduct = Guid.NewGuid(), Quantity = 1 },
+            new OrderItemDto { IdProduct = Guid.NewGuid(), Quantity = 5 },
+            new OrderItemDto { IdProduct = Guid.NewGuid(), Quantity = 10 }
         };
         var query = _productFixture.StockValidationQuery(items: validItems);
 

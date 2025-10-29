@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Stock.Application.Products.Queries.StockValidation;
+namespace Stock.Application.Product.Queries.StockValidation;
 
 public class StockValidationValidator : AbstractValidator<StockValidationQuery>
 {

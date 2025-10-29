@@ -1,4 +1,4 @@
-﻿namespace Stock.Application.Products.Commands.UpdateProduct;
+﻿namespace Stock.Application.Product.Commands.UpdateProduct;
 
 public record UpdateProductResponse(
     Guid IdProduct,

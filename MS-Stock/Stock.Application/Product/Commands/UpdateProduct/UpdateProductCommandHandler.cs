@@ -1,15 +1,14 @@
 ﻿using FluentResults;
 using FluentValidation;
 using MediatR;
-using Stock.Domain.Models.Interfaces;
+using Stock.Application.Interfaces;
 
-namespace Stock.Application.Products.Commands.UpdateProduct;
+namespace Stock.Application.Product.Commands.UpdateProduct;
 
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, Result<UpdateProductResponse>>
 {
     private readonly IProductRepository _productRepository;
     private readonly IValidator<UpdateProductCommand> _validatorUpdateProduct;
-
     public UpdateProductCommandHandler(IProductRepository productRepository,
         IValidator<UpdateProductCommand> validatorUpdateProduct)
     {

@@ -1,4 +1,4 @@
-﻿namespace Stock.Application.Products.Queries.GetProductById;
+﻿namespace Stock.Application.Product.Queries.GetProductById;
 
 public record GetProductByIdResponse(
     Guid IdProduct,

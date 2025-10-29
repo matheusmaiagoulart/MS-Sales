@@ -1,4 +1,4 @@
-﻿namespace Stock.Application.Products.Commands.CreateProduct;
+﻿namespace Stock.Application.Product.Commands.CreateProduct;
 
 public record CreateProductResponse(
     Guid IdProduct,

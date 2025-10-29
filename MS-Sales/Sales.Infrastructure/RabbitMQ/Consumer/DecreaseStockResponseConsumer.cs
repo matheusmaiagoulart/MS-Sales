@@ -36,18 +36,14 @@ public class DecreaseStockResponseConsumer : IDecreaseStockResponseConsumer
             var maxRetry = timeoutSeconds;
             var timeout = 1; // seconds
             
-            
             for (int i = 0; i < maxRetry; i++)
             {
                 var response = GetResponseInDictionary(idOrder);
                 if (response != null)
-                {
                     return Result.Ok(response);
-                }
-
+                
                 if (i < maxRetry - 1)
                     await Task.Delay(TimeSpan.FromSeconds(timeout));
-                
             }
         }
         catch (OperationCanceledException e)

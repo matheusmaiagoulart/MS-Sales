@@ -3,7 +3,7 @@ using FluentResults;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using Stock.Application.Products.Commands.UpdateStock;
+using Stock.Application.Product.Commands.UpdateStock;
 using Stock.Infrastructure.RabbitMQ.Interfaces;
 
 namespace Stock.Infrastructure.RabbitMQ.Consumers;
