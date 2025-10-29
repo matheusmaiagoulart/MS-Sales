@@ -26,8 +26,7 @@ public class UpdateStockCommandHandler : IRequestHandler<UpdateStockCommand, Res
 
             foreach (var item in listItemsValidation)
             {
-                var resultDecrease =
-                    await _productRepository.TryReserve(request.IdOrder, item.IdProduct, item.Quantity);
+                var resultDecrease = await _productRepository.TryReserve(request.IdOrder, item.IdProduct, item.Quantity);
                 if (!resultDecrease)
                 {
                     _logger.LogError("Failed to decrease stock for IdProduct: " + item.IdProduct);
